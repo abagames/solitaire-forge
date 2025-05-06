@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",          // Target modern JavaScript features
+    "module": "NodeNext",        // Use Node.js's native ES module support
+    "moduleResolution": "NodeNext", // How modules are resolved
+    "strict": true,             // Enable all strict type-checking options
+    "esModuleInterop": true,     // Enables emit interoperability between CommonJS and ES Modules
+    "skipLibCheck": true,       // Skip type checking of declaration files
+    "forceConsistentCasingInFileNames": true, // Disallow inconsistently-cased references to the same file
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "outDir": "./docs",          // Optional: Specify output directory for compiled JS (not used by ts-node directly)
+    "rootDir": "./src",          // Specify the root directory of input files
+    "resolveJsonModule": true   // Allows importing JSON files
+  },
+  "include": ["src/**/*"],      // Include all files within the src directory
+  "exclude": ["node_modules", "**/*.spec.ts"] // Exclude node_modules and test files
+}
