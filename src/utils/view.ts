@@ -284,7 +284,7 @@ export class CardView {
       if (showFace) {
         if (this.suit === "joker") {
           color("black");
-          const charCenterX = this.pos.x - 1 * currentScaleX;
+          const charCenterX = ceil(this.pos.x - 1);
           const charOptions: LetterOptions = { scale: { x: currentScaleX } };
           char("i", charCenterX, this.pos.y - 3, charOptions);
           char("j", charCenterX, this.pos.y + 3, charOptions);
@@ -292,7 +292,7 @@ export class CardView {
           // --- Standard suit drawing logic ---
           const suitColor =
             this.suit === "heart" || this.suit === "diamond" ? "red" : "black";
-          const charCenterX = this.pos.x - 1 * currentScaleX;
+          const charCenterX = ceil(this.pos.x - 1);
           const charOptions: LetterOptions = { scale: { x: currentScaleX } };
 
           // --- FIX: Draw SUIT ---
@@ -320,8 +320,7 @@ export class CardView {
       } else {
         // 裏面の描画 (スケール適用)
         color("blue");
-        // 中心を基準にオフセットをスケールに合わせて調整
-        const charCenterX = this.pos.x - 1 * currentScaleX; // -1 オフセットをスケール
+        const charCenterX = ceil(this.pos.x - 1);
         const charOptions: LetterOptions = { scale: { x: currentScaleX } };
         char(
           addWithCharCode("a", suitToIndex.back),
