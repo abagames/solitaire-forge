@@ -10,9 +10,11 @@
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "outDir": "./docs",          // Optional: Specify output directory for compiled JS (not used by ts-node directly)
-    "rootDir": "./src",          // Specify the root directory of input files
-    "resolveJsonModule": true   // Allows importing JSON files
+    "rootDirs": ["./src", "./test"],
+    "resolveJsonModule": true,   // Allows importing JSON files
+    "types": ["node", "jest"],
+    "isolatedModules": true
   },
-  "include": ["src/**/*"],      // Include all files within the src directory
-  "exclude": ["node_modules", "**/*.spec.ts"] // Exclude node_modules and test files
+  "include": ["src/**/*", "test/**/*"],
+  "exclude": ["node_modules"]
 }
