@@ -360,7 +360,7 @@ function handleTutorialInputLogic(
 }
 
 // --- NEW: Function to update the tutorial display state ---
-function updateTutorialDisplay(
+export function updateTutorialDisplay(
   step: TutorialStep,
   prevStep: TutorialStep | null,
   bubble: SpeechBubbleView | null,
@@ -471,7 +471,7 @@ function startNewGame(): boolean {
 
 // --- NEW: Function to handle input during Ongoing state ---
 // Returns true if an action was taken, false otherwise.
-function handleOngoingInput(): boolean {
+export function handleOngoingInput(): boolean {
   if (!gameState) return false; // Should not happen due to guard in update, but safe check
 
   const clickPos = input.pos;
@@ -1307,3 +1307,84 @@ init({
     buzz: "./media/buzz.mp3",
   },
 });
+
+// ======== TEST HOOKS START ========
+// These functions are intended for testing purposes only.
+// Do not use them in production code.
+
+export const __TEST_ONLY_setGameState = (newState: ExpeditionState | null) => {
+  gameState = newState;
+};
+export const getGameState = (): ExpeditionState | null => gameState;
+
+export const __TEST_ONLY_setSelectedSourceCell = (
+  newSelection: { r: number; c: number } | null
+) => {
+  selectedSourceCell = newSelection;
+};
+export const getSelectedSourceCell = (): { r: number; c: number } | null =>
+  selectedSourceCell;
+
+export const __TEST_ONLY_setSelectedHandIndex = (newIndex: number | null) => {
+  selectedHandIndex = newIndex;
+};
+export const getSelectedHandIndex = (): number | null => selectedHandIndex;
+
+export const __TEST_ONLY_setTutorialStep = (newStep: TutorialStep) => {
+  tutorialStep = newStep;
+};
+export const getTutorialStep = (): TutorialStep => tutorialStep;
+
+export const __TEST_ONLY_setIsDiscardModeActive = (newMode: boolean) => {
+  isDiscardModeActive = newMode;
+};
+export const getIsDiscardModeActive = (): boolean => isDiscardModeActive; // Getter for isDiscardModeActive
+
+export const __TEST_ONLY_setGridCardViews = (
+  newViews: (CardView | null)[][]
+) => {
+  gridCardViews = newViews;
+};
+export const getGridCardViews = (): (CardView | null)[][] => gridCardViews;
+
+export const __TEST_ONLY_setHandCardViews = (newViews: (CardView | null)[]) => {
+  handCardViews = newViews;
+};
+export const getHandCardViews = (): (CardView | null)[] => handCardViews;
+
+export const __TEST_ONLY_setTutorialBubble = (
+  newBubble: SpeechBubbleView | null
+) => {
+  tutorialBubble = newBubble;
+};
+export const getTutorialBubble = (): SpeechBubbleView | null => tutorialBubble;
+
+export const __TEST_ONLY_setShownTutorialStepsThisSession = (
+  newSet: Set<TutorialStep>
+) => {
+  shownTutorialStepsThisSession = newSet;
+};
+export const getShownTutorialStepsThisSession = (): Set<TutorialStep> =>
+  shownTutorialStepsThisSession;
+
+export const __TEST_ONLY_setGameStatus = (
+  newStatus: "ONGOING" | "WIN" | "LOSE"
+) => {
+  gameStatus = newStatus;
+};
+export const getGameStatus = (): "ONGOING" | "WIN" | "LOSE" => gameStatus;
+
+export const __TEST_ONLY_setGameOverReason = (newReason: string | null) => {
+  gameOverReason = newReason;
+};
+export const getGameOverReason = (): string | null => gameOverReason;
+
+export const __TEST_ONLY_setPreviousTutorialStep = (
+  newStep: TutorialStep | null
+) => {
+  previousTutorialStep = newStep;
+};
+export const getPreviousTutorialStep = (): TutorialStep | null =>
+  previousTutorialStep;
+
+// ======== TEST HOOKS END ========

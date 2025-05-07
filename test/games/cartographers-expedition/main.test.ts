@@ -41,8 +41,6 @@ let testHandCardViews: any[];
 let testTutorialBubbleInstance: any;
 let initialTutorialStepForTest: any; // To store the tutorial step before input
 
-// const getCrispGlobal = ...; // This helper might no longer be needed if moduleNameMapper works as expected
-
 describe("Cartographer's Expedition - Main Game Flow", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -50,18 +48,7 @@ describe("Cartographer's Expedition - Main Game Flow", () => {
     // crisp-game-lib-stub.ts sets globals. We only need to reset mutable state on the imported module's objects if necessary.
     if (crispGameLibModule && crispGameLibModule.input) {
       (crispGameLibModule.input as any).isJustPressed = false;
-      // The `pos` object with its methods (isInRect, set) should be defined in the stub and set globally.
-      // No need to re-assign crispGameLibModule.input.pos here if the global one is used by main.ts.
-      // Let's ensure the stub's global pos is reset if it's mutable, or that it's fresh.
-      // For now, assume the stub's pos is fresh or its methods are jest.fn() cleared by clearAllMocks.
-    }
-
-    // Reset properties on the stubbed crispGameLibModule's input object directly if they are mutable state.
-    // The stub itself defines the structure and jest.fn() for functions.
-    if (crispGameLibModule && crispGameLibModule.input) {
-      (crispGameLibModule.input as any).isJustPressed = false;
-      // Ensure pos has vector methods, create a compatible object from stub's vec
-      const vecStub = crispGameLibModule.vec(0, 0); // vec() from stub returns {x,y, ...commonVecProps}
+      const vecStub = crispGameLibModule.vec(0, 0);
       (crispGameLibModule.input as any).pos = {
         x: 0,
         y: 0,
@@ -69,7 +56,6 @@ describe("Cartographer's Expedition - Main Game Flow", () => {
         set: vecStub.set,
       };
     }
-    // jest.clearAllMocks() handles resetting all jest.fn() instances, including those exported by the stub and used globally.
 
     // Resetting mocks on the (manually mocked via __mocks__) definition module
     if (ActualCartographersExpedition) {
@@ -165,7 +151,6 @@ describe("Cartographer's Expedition - Main Game Flow", () => {
     __TEST_ONLY_setIsDiscardModeActive(false);
     __TEST_ONLY_setShownTutorialStepsThisSession(new Set());
 
-    // CardView and SpeechBubbleView will now come from the stub via crispGameLibModule
     testGridCardViews = initialGameState.grid.map((row: any[]) =>
       row.map((cell) => {
         if (cell) {
@@ -194,7 +179,6 @@ describe("Cartographer's Expedition - Main Game Flow", () => {
     testTutorialBubbleInstance = new crispGameLibModule.SpeechBubbleView();
     __TEST_ONLY_setTutorialBubble(testTutorialBubbleInstance);
 
-    // Mock crispGameLibModule.color to return the input color name
     (crispGameLibModule.color as jest.Mock).mockImplementation((name) => name);
   });
 
@@ -522,19 +506,18 @@ describe("Cartographer's Expedition - Main Game Flow", () => {
     handleOngoingInput(); // This will call applyAction internally
 
     // 1. Verify applyAction was called
-    expect(ActualCartographersExpedition.applyAction).toHaveBeenCalledWith(
-      gameStateBeforeCall,
-      {
-        type: "revealAdjacent",
-        payload: {
-          handIndex: handCardIndex,
-          sourceRow: sourceCardR,
-          sourceCol: sourceCardC,
-          targetRow: targetCardR,
-          targetCol: targetCardC,
-        },
-      }
-    );
+    expect(
+      ActualCartographersExpedition.applyAction as jest.Mock
+    ).toHaveBeenCalledWith(gameStateBeforeCall, {
+      type: "revealAdjacent",
+      payload: {
+        handIndex: handCardIndex,
+        sourceRow: sourceCardR,
+        sourceCol: sourceCardC,
+        targetRow: targetCardR,
+        targetCol: targetCardC,
+      },
+    });
 
     // 2. Verify gameState was updated by applyAction
     expect(getGameState()).toEqual(expectedGameStateAfterAction);
@@ -545,13 +528,17 @@ describe("Cartographer's Expedition - Main Game Flow", () => {
     const stateAfterAction = getGameState(); // This is expectedGameStateAfterAction
     if (!stateAfterAction)
       throw new Error("GameState became null after action in test"); // Guard for null
-    const gameEndResult =
-      ActualCartographersExpedition.checkGameEnd(stateAfterAction);
+    const gameEndResult = (
+      ActualCartographersExpedition.checkGameEnd as jest.Mock
+    )(stateAfterAction) as {
+      status: "ONGOING" | "WIN" | "LOSE";
+      reason?: string;
+    };
 
     // 3. Verify checkGameEnd was called with the new state
-    expect(ActualCartographersExpedition.checkGameEnd).toHaveBeenCalledWith(
-      expectedGameStateAfterAction
-    );
+    expect(
+      ActualCartographersExpedition.checkGameEnd as jest.Mock
+    ).toHaveBeenCalledWith(expectedGameStateAfterAction);
     expect(gameEndResult).toEqual(mockCheckGameEndResult);
 
     // 4. Simulate what the update loop in main.ts would do with this result
