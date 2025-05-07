@@ -1,9 +1,9 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  root: "src/games/cartographers-expedition",
+  root: "src/games/catalyst-reaction",
   build: {
-    outDir: "../../dist/cartographers-expedition",
+    outDir: "../../docs/catalyst-reaction",
     emptyOutDir: true,
   },
 });
