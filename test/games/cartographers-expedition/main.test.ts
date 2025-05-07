@@ -9,7 +9,7 @@ import type {
 // Import the modules. Jest will use manual mocks (__mocks__ or stubs via moduleNameMapper)
 // @ts-expect-error TS7016: Could not find a declaration file for module 'crisp-game-lib'.
 import * as crispGameLibModule from "crisp-game-lib";
-import { CartographersExpedition as ActualCartographersExpedition } from "../../../src/games/cartographers-expedition/definition.js";
+import { CartographersExpedition as ActualCartographersExpedition } from "../../../src/games/cartographers-expedition/definition.js"; // Restore this import
 
 // テスト対象の関数や定数をインポート
 import {
@@ -45,7 +45,7 @@ describe("Cartographer's Expedition - Main Game Flow", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // crisp-game-lib-stub.ts sets globals. We only need to reset mutable state on the imported module's objects if necessary.
+    // crisp-game-lib-stub.ts sets globals.
     if (crispGameLibModule && crispGameLibModule.input) {
       (crispGameLibModule.input as any).isJustPressed = false;
       const vecStub = crispGameLibModule.vec(0, 0);
@@ -57,7 +57,7 @@ describe("Cartographer's Expedition - Main Game Flow", () => {
       };
     }
 
-    // Resetting mocks on the (manually mocked via __mocks__) definition module
+    // Restore resetting mocks on the (manually mocked via __mocks__) definition module
     if (ActualCartographersExpedition) {
       if (
         typeof (ActualCartographersExpedition.applyAction as jest.Mock)
@@ -147,10 +147,11 @@ describe("Cartographer's Expedition - Main Game Flow", () => {
     __TEST_ONLY_setSelectedSourceCell(null);
     __TEST_ONLY_setSelectedHandIndex(null);
     __TEST_ONLY_setTutorialStep(1);
-    initialTutorialStepForTest = 1; // Store it for use as prevStep
+    initialTutorialStepForTest = 1;
     __TEST_ONLY_setIsDiscardModeActive(false);
     __TEST_ONLY_setShownTutorialStepsThisSession(new Set());
 
+    // Restore original view initialization if it was changed
     testGridCardViews = initialGameState.grid.map((row: any[]) =>
       row.map((cell) => {
         if (cell) {
@@ -158,6 +159,9 @@ describe("Cartographer's Expedition - Main Game Flow", () => {
           mockView.rank = cell.rank;
           mockView.suit = cell.suit;
           mockView.isFaceUp = cell.faceUp;
+          // Ensure necessary methods are mocked if stub CardView is basic
+          mockView.containsPoint = jest.fn().mockReturnValue(false);
+          mockView.startFlipAnimation = jest.fn();
           return mockView;
         }
         return null;
@@ -169,6 +173,8 @@ describe("Cartographer's Expedition - Main Game Flow", () => {
         mockView.rank = card.rank;
         mockView.suit = card.suit;
         mockView.isFaceUp = true;
+        mockView.containsPoint = jest.fn().mockReturnValue(false);
+        mockView.startFlipAnimation = jest.fn();
         return mockView;
       }
       return null;
@@ -177,6 +183,11 @@ describe("Cartographer's Expedition - Main Game Flow", () => {
     __TEST_ONLY_setHandCardViews(testHandCardViews);
 
     testTutorialBubbleInstance = new crispGameLibModule.SpeechBubbleView();
+    // Ensure necessary methods are mocked if stub SpeechBubbleView is basic
+    testTutorialBubbleInstance.setText = jest.fn();
+    testTutorialBubbleInstance.show = jest.fn();
+    testTutorialBubbleInstance.hide = jest.fn();
+    testTutorialBubbleInstance.setTail = jest.fn();
     __TEST_ONLY_setTutorialBubble(testTutorialBubbleInstance);
 
     (crispGameLibModule.color as jest.Mock).mockImplementation((name) => name);
@@ -305,9 +316,7 @@ describe("Cartographer's Expedition - Main Game Flow", () => {
     handleOngoingInput(); // This will call the mocked applyAction
 
     // 1. Verify applyAction was called with the correct *pre-action* state and action payload
-    expect(
-      ActualCartographersExpedition.applyAction as jest.Mock
-    ).toHaveBeenCalledWith(
+    expect(ActualCartographersExpedition.applyAction).toHaveBeenCalledWith(
       gameStateBeforeCall, // Use the state captured *before* handleOngoingInput
       {
         type: "revealAdjacent",
@@ -406,12 +415,13 @@ describe("Cartographer's Expedition - Main Game Flow", () => {
     handleOngoingInput(); // This should trigger the discard
 
     // 1. Verify applyAction was called correctly
-    expect(
-      ActualCartographersExpedition.applyAction as jest.Mock
-    ).toHaveBeenCalledWith(gameStateBeforeCall, {
-      type: "discardAndDraw",
-      payload: { handIndex: handCardToDiscardIndex },
-    });
+    expect(ActualCartographersExpedition.applyAction).toHaveBeenCalledWith(
+      gameStateBeforeCall,
+      {
+        type: "discardAndDraw",
+        payload: { handIndex: handCardToDiscardIndex },
+      }
+    );
 
     // 2. Verify game state was updated
     expect(getGameState()).toEqual(expectedGameStateAfterDiscard);
@@ -506,18 +516,19 @@ describe("Cartographer's Expedition - Main Game Flow", () => {
     handleOngoingInput(); // This will call applyAction internally
 
     // 1. Verify applyAction was called
-    expect(
-      ActualCartographersExpedition.applyAction as jest.Mock
-    ).toHaveBeenCalledWith(gameStateBeforeCall, {
-      type: "revealAdjacent",
-      payload: {
-        handIndex: handCardIndex,
-        sourceRow: sourceCardR,
-        sourceCol: sourceCardC,
-        targetRow: targetCardR,
-        targetCol: targetCardC,
-      },
-    });
+    expect(ActualCartographersExpedition.applyAction).toHaveBeenCalledWith(
+      gameStateBeforeCall,
+      {
+        type: "revealAdjacent",
+        payload: {
+          handIndex: handCardIndex,
+          sourceRow: sourceCardR,
+          sourceCol: sourceCardC,
+          targetRow: targetCardR,
+          targetCol: targetCardC,
+        },
+      }
+    );
 
     // 2. Verify gameState was updated by applyAction
     expect(getGameState()).toEqual(expectedGameStateAfterAction);
@@ -536,9 +547,9 @@ describe("Cartographer's Expedition - Main Game Flow", () => {
     };
 
     // 3. Verify checkGameEnd was called with the new state
-    expect(
-      ActualCartographersExpedition.checkGameEnd as jest.Mock
-    ).toHaveBeenCalledWith(expectedGameStateAfterAction);
+    expect(ActualCartographersExpedition.checkGameEnd).toHaveBeenCalledWith(
+      expectedGameStateAfterAction
+    );
     expect(gameEndResult).toEqual(mockCheckGameEndResult);
 
     // 4. Simulate what the update loop in main.ts would do with this result

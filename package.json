@@ -8,7 +8,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:catalyst": "node --experimental-vm-modules node_modules/jest/bin/jest.js test/games/catalyst-reaction/main.test.ts",
+    "test:cartographers": "node --experimental-vm-modules node_modules/jest/bin/jest.js test/games/cartographers-expedition/main.test.ts"
   },
   "dependencies": {
     "@types/seedrandom": "^3.0.8",
