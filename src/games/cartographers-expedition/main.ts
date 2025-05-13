@@ -8,7 +8,7 @@ import {
 } from "./definition.ts";
 import { Card, Rank, Suit } from "../../types.ts";
 
-const isRecording = false;
+const enableRecording = false;
 
 let gameState: ExpeditionState | null = null;
 let selectedHandIndex: number | null = null;
@@ -1149,11 +1149,11 @@ function update() {
   // --- Initialize session only ONCE on script load ---
   if (!ticks) {
     initializeSession();
-    if (isRecording) {
+    if (enableRecording) {
       startRecording();
     }
   }
-  if (isRecording && keyboard.code["KeyR"].isJustPressed) {
+  if (enableRecording && keyboard.code["KeyR"].isJustPressed) {
     stopRecording();
   }
 
