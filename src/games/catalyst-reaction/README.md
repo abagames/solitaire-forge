@@ -1,63 +1,63 @@
 # Catalyst Reaction
 
-**テーマ:** 錬金術師の工房 (Alchemist's Workshop)
-**コアメカニクス:** 自動触媒反応 (Catalyst Reaction) - v10 Rules / 3-Card Hand / Field 8 (Init Replenish) / 3-Match Auto-React
+**Theme:** Alchemist's Workshop
+**Core Mechanics:** Catalyst Reaction - v10 Rules / 3-Card Hand / Field 8 (Init Replenish) / 3-Match Auto-React
 
-## ゲームの目標
+## Game Objective
 
-場 (Field) に存在する全てのカードを取り除く（完全に「変成」させる）。
+Remove (completely "transmute") all cards present on the Field.
 
-## 準備
+## Preparation
 
-1.  標準的な 52 枚のカードをよくシャッフルし、山札 (Deck) とする。
-2.  山札から **8 枚**のカードを表向きに引き、場 (Field) に一列に並べる。
-3.  **【初期自動反応 & 補充ループ】**
-    a. 現在の場のカードに対して自動反応チェック (v9: 3 枚一致ルール) を実行する。
-    b. もし反応によって場のカードが取り除かれた場合:
-    i. 山札からカードを引き、場のカードが **8 枚になるまで補充**する (山札が尽きた場合は補充できない)。
-    ii. **手順 3a に戻り**、補充後の場で再度自動反応チェックを行う。
-    c. 自動反応が何も起こらなければ、このループを終了する。
-4.  場が安定したら (自動反応が起こらなくなった状態)、山札から 3 枚のカードを引き、手札 (Hand) とする。
+1.  Shuffle a standard 52-card deck to form the Deck.
+2.  Draw **8 cards** from the Deck face-up and arrange them in a single row on the Field.
+3.  **[Initial Auto-Reaction & Replenish Loop]**
+    a. Perform an auto-reaction check (v9: 3-card match rule) on the current cards on the Field.
+    b. If cards are removed from the Field due to a reaction:
+    i. Draw cards from the Deck and **replenish the Field until it has 8 cards** (if the Deck runs out, replenishment may not be possible).
+    ii. **Return to step 3a** and perform an auto-reaction check again on the replenished Field.
+    c. If no auto-reactions occur, end this loop.
+4.  Once the Field is stable (no more auto-reactions occur), draw 3 cards from the Deck to form your Hand.
 
-## プレイ
+## Play
 
-プレイヤーは手番ごとに必ず以下の「触媒をプレイ」アクションを実行する（手札がある限り）。手札は常に最大 3 枚とする。
+On each turn, the player must perform the following "Play Catalyst" action (as long as they have cards in hand). The hand size is always a maximum of 3 cards.
 
-1.  **触媒をプレイ (Play Catalyst):**
-    - 手札から触媒として使用するカードを 1 枚選択し、**場の配置場所を指定する**。指定可能な場所は、場のカードの間（インデックス `1` から `場のカード枚数 - 1`）**または**、場の左端（インデックス `0`）、場の右端（インデックス `場のカード枚数`）のいずれか。
-    - **【プレイヤー反応判定】**
-      - 指定した場所に選択した触媒カードを置いた場合、それが左右の隣接カード**両方**と反応するかどうかを判定する。
-      - **反応条件:** 3 枚（左隣カード・触媒カード・右隣カード）すべてが同じランク **または** 3 枚すべてが同じスート。
-      - **注意:** 場の左端 (`0`) または右端 (`場のカード枚数`) に配置した場合、隣接カードは片方しか存在しないため、このプレイヤー反応条件は満たされない。
-    - **【アクション実行】**
-      - **プレイヤー反応が起こった場合 (間に配置した場合のみ):**
-        - 触媒（手札）、左隣（場）、右隣（場）の合計 3 枚を取り除く。
-      - **プレイヤー反応が起こらない場合 (端に配置した場合、または間に配置して条件不一致の場合):**
-        - 触媒（手札）を指定場所に場のカードとして配置する。
-    - 【自動反応チェック】 アクション実行後（カードが取り除かれた or 配置された後）、場のカードに対して自動反応チェックを実行する。
-    - 【手札補充】 すべての反応（プレイヤー反応 + 自動反応）が完了した後、山札が残っていれば 1 枚カードを引き、手札に加える。
+1.  **Play Catalyst:**
+    - Select 1 card from your hand to use as a catalyst and **specify a placement position on the Field**. Possible positions are between existing cards on the Field (index `1` to `number of cards on Field - 1`) **or** at the left end (index `0`) or right end (index `number of cards on Field`) of the Field.
+    - **[Player Reaction Check]**
+      - If the chosen catalyst card is placed in the specified position, determine if it reacts with **both** its left and right adjacent cards.
+      - **Reaction Condition:** All three cards (left neighbor, catalyst card, right neighbor) are of the same rank **OR** all three cards are of the same suit.
+      - **Note:** If placed at the left end (`0`) or right end (`number of cards on Field`) of the Field, only one adjacent card exists, so this player reaction condition cannot be met.
+    - **[Action Execution]**
+      - **If a player reaction occurs (only when placed between cards):**
+        - Remove the catalyst (from hand), the left neighbor (from Field), and the right neighbor (from Field) – a total of 3 cards.
+      - **If no player reaction occurs (when placed at an end, or placed between cards but conditions not met):**
+        - Place the catalyst (from hand) onto the Field as a card in the specified position.
+    - **[Auto-Reaction Check]** After the action is executed (cards are removed or placed), perform an auto-reaction check on the cards on the Field.
+    - **[Hand Replenishment]** After all reactions (player reaction + auto-reactions) are complete, if the Deck has cards remaining, draw 1 card and add it to your hand.
 
-## 自動反応チェック 詳細
+## Auto-Reaction Check Details
 
-このチェックは、準備フェーズの初期配置後、およびプレイヤーのアクションで場の状態が変化した後に実行される。
+This check is performed after the initial setup and after any player action changes the state of the Field.
 
-1.  現在の場のカード列を左から右へスキャンする。
-2.  場の `i` 番目のカード (1 <= `i` < `場の最後のカードのインデックス`) について、その左隣 (`i-1`) と右隣 (`i+1`) のカードが存在するか確認する。
-3.  `[カード(i-1), カード(i), カード(i+1)]` の 3 枚が存在する場合、以下の**いずれか**の条件をチェックする:
-    - 3 枚すべてが**同じランク**である。
-    - **または** 3 枚すべてが**同じスート**である。
-4.  上記条件を満たす最初の `i` が見つかった場合:
-    - 3 枚のカード (`i-1`, `i`, `i+1`) を場から取り除く。
-    - 場が変化したので、**手順 1 に戻り、再度場の最初からスキャンをやり直す**。
-5.  スキャンを最後まで行っても条件を満たす 3 枚組が見つからなければ、自動反応チェックを終了する。
+1.  Scan the current row of cards on the Field from left to right.
+2.  For the `i`-th card on the Field (1 <= `i` < `index of the last card on Field`), check if its left (`i-1`) and right (`i+1`) neighbors exist.
+3.  If the three cards `[card(i-1), card(i), card(i+1)]` exist, check **either** of the following conditions:
+    - All three cards are of the **same rank**.
+    - **OR** all three cards are of the **same suit**.
+4.  If the first `i` satisfying the above conditions is found:
+    - Remove the three cards (`i-1`, `i`, `i+1`) from the Field.
+    - Since the Field has changed, **return to step 1 and rescan from the beginning of the Field**.
+5.  If the scan completes without finding any triplet satisfying the conditions, end the auto-reaction check.
 
-## ゲーム終了
+## Game End
 
-- **勝利:** 場の全てのカードが取り除かれた場合。
-- **敗北:** プレイヤーの手番開始時に手札がない場合（アクションを実行できないため）。
+- **Victory:** When all cards on the Field have been removed.
+- **Defeat:** If the player has no cards in hand at the start of their turn (as they cannot perform an action).
 
-## 想定される戦略
+## Potential Strategies
 
-- **セットアップ重視:** プレイヤー反応を活用して場を整え、自動反応 (3 枚一致) を狙う。
-- **戦略的配置:** 自動反応が起きにくいため、プレイヤー反応を主体に考える。
-- **手札管理:** プレイヤー反応を最大限に活用できる手札と配置場所を選ぶ。
+- **Setup Focused:** Utilize player reactions to arrange the Field and aim for auto-reactions (3-card matches).
+- **Strategic Placement:** Since auto-reactions are less likely, focus primarily on player reactions.
+- **Hand Management:** Choose hand cards and placement positions that maximize the utility of player reactions.

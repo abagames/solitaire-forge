@@ -1,97 +1,97 @@
 # Cartographer's Expedition
 
-## 概要
+## Overview
 
-「Cartographer's Expedition（地図製作者の探検）」は、未知の土地を探索し、隠された重要なランドマークを発見することを目指す一人用トランプゲームです。プレイヤーは手札のカードと場の表向きカードを戦略的に組み合わせ、隣接する裏向きカードを公開していき、4 つの隠されたランドマーク（エース）をすべて見つけることが目標です。
+"Cartographer's Expedition" is a single-player card game where the goal is to explore unknown lands and discover important hidden landmarks. Players strategically combine cards from their hand with face-up cards on the field to reveal adjacent face-down cards, aiming to find all four hidden landmarks (Aces).
 
-## 必要なもの
+## Requirements
 
-- 標準的なトランプ一組（52 枚）
+- A standard 52-card deck of playing cards.
 
-## セットアップ
+## Setup
 
-1. カードを以下のように準備します：
+1.  Prepare the cards as follows:
 
-   - 4 枚のエース（各スート 1 枚）を取り出します。
-   - 残りのカードをシャッフルします。
+    - Remove the four Aces (one from each suit).
+    - Shuffle the remaining cards.
 
-2. 5×5 のグリッドを作ります：
+2.  Create a 5x5 grid:
 
-   - 4 つのエースを裏向きで盤面の四隅に配置します。
-   - 中央のマスには 1 枚のカードを表向きで配置します（これが探索の起点になります）。
-     - **注意:** 中央の初期カードが 10, J, Q, K の場合、または初期手札のいずれともスート・ランクが一致しない場合は、そのカードは**山札に戻されシャッフルされた後**、山札から条件を満たすカードが出るまで引き直されます（山札が尽きた場合は中央は空になります）。
-   - 中央のマスと四隅を除く残りの 20 マスに、シャッフルしたカードを裏向きで配置します。
+    - Place the four Aces face-down in the four corners of the board.
+    - Place one card face-up in the center square (this will be the starting point of the expedition).
+      - **Note:** If the initial center card is a 10, Jack, Queen, or King, OR if it does not match any of the initial hand cards by suit or rank, that card is **returned to the deck and shuffled**, and cards are redrawn from the deck until a suitable card is found (if the deck runs out, the center will be empty).
+    - Place shuffled cards face-down in the remaining 20 squares, excluding the center square and the four corners.
 
-3. 手札として 4 枚のカードを配ります。
+3.  Deal 4 cards as your hand.
 
-4. 残りのカードは山札として脇に置きます。
+4.  Set aside the remaining cards as the draw pile.
 
-## ゲームの目的
+## Game Objective
 
-4 つの隠されたランドマーク（エース）をすべて表向きにすることがゲームの目標です。ただし、有効な手がなくなった場合はゲームに敗北します（手札や山札が尽きた場合も含む）。
+The goal of the game is to turn all four hidden landmarks (Aces) face-up. However, if you run out of valid moves (including running out of cards in your hand or the draw pile), you lose the game.
 
-## ゲームの進め方
+## Gameplay
 
-プレイヤーは、**可能な限り**以下のアクションのいずれかを行います：
+Players perform one of the following actions **if possible**:
 
-### アクション A: 隣接カードの公開
+### Action A: Reveal Adjacent Card
 
-1.  **起点となる表向きカードを選ぶ:** 場にある表向きのカード `F` を 1 枚選びます。
-2.  **手札を選ぶ:**
-    - 起点カード `F` が **10, J, Q, K の場合**: 手札から、`F` と**ランク**が一致するカード `H` を 1 枚選びます。
-    - 起点カード `F` が **10, J, Q, K 以外の場合**: 手札から、`F` と**スートまたはランク**が一致するカード `H` を 1 枚選びます。
-3.  **対象の裏向きカードを選ぶ:** 選んだ表向きカード `F` に隣接する（上下左右）裏向きのカード `T` を 1 枚選びます。
-4.  **アクション実行:**
-    - 上記 1 ～ 3 の条件を満たす組み合わせが存在する場合に実行できます。
-    - 手札のカード `H` を捨て札にします。
-    - 対象の裏向きカード `T` を**表向き**にします。
-    - 山札からカードを 1 枚引いて手札に加えます（山札があれば）。
+1.  **Choose a face-up starting card:** Select one face-up card `F` on the field.
+2.  **Choose a hand card:**
+    - If the starting card `F` is a **10, J, Q, or K**: Choose one card `H` from your hand that matches `F` in **rank**.
+    - If the starting card `F` is **not a 10, J, Q, or K**: Choose one card `H` from your hand that matches `F` in **suit or rank**.
+3.  **Choose a target face-down card:** Select one face-down card `T` that is adjacent (up, down, left, or right) to the chosen face-up card `F`.
+4.  **Execute action:**
+    - This can be executed if a combination satisfying conditions 1-3 exists.
+    - Discard the hand card `H`.
+    - Turn the target face-down card `T` **face-up**.
+    - Draw one card from the draw pile and add it to your hand (if the draw pile is not empty).
 
-### アクション B: 手札交換 (任意)
+### Action B: Exchange Hand Card (Optional)
 
-- 山札にカードが残っている場合、プレイヤーは手札から 1 枚カードを選んで捨て札にし、山札から 1 枚カードを引いて手札に加えることができます。
-- このアクションは、「アクション A」の実行とは独立して、プレイヤーが任意に行えます。
+- If there are cards remaining in the draw pile, the player can choose one card from their hand, discard it, and draw one card from the draw pile to add to their hand.
+- This action can be taken optionally by the player, independent of performing "Action A".
 
-(注意: アクション A は、条件を満たす組み合わせが存在する場合にのみ実行できます。アクション B は山札があればいつでも実行できます。)
+(Note: Action A can only be executed if a combination satisfying the conditions exists. Action B can be executed at any time if the draw pile is not empty.)
 
-## ゲームの終了条件
+## Game End Conditions
 
-以下のいずれかの条件が満たされるとゲームは終了します：
+The game ends when one of the following conditions is met:
 
-- **勝利条件**: 4 つのすべてのランドマーク（エース）を表向きにした場合。
-- **敗北条件**:
-  - **山札がなくなった場合**。（最優先）
-  - （山札が残っていても）有効な**アクション A（公開）**も**アクション B（手札交換）**も実行できなくなった場合。
+- **Win Condition**: All four landmarks (Aces) are turned face-up.
+- **Lose Condition**:
+  - **The draw pile runs out.** (Highest priority)
+  - (Even if the draw pile remains) Neither a valid **Action A (Reveal)** nor **Action B (Exchange Hand Card)** can be performed.
 
-## 戦略のヒント (v1 ルール)
+## Strategy Tips (v1 Rules)
 
-**10, J, Q, K** が公開されると、そのカードを起点として利用するには**同じランク**の手札が必要になるため、戦略的な判断が求められます。
-山札がなくなるとゲームオーバーになるため、無駄な手札交換は避け、計画的にカードを公開していく必要があります。
+When a **10, J, Q, or K** is revealed, using that card as a starting point requires a hand card of the **same rank**, demanding strategic decisions.
+Running out of cards in the draw pile results in a game over, so avoid wasteful hand exchanges and plan your card reveals strategically.
 
-### どの組み合わせで公開するか？
+### Which Combination to Reveal?
 
-- **起点カード(F)の選択:**
-  - どの表向きカードを起点に選びますか？ 10, J, Q, K のカードを使うには特別な条件（ランク一致）が必要ですが、戦略的に重要ですか？
-  - そのカードの隣には、あなたが公開したい裏向きカード（角に近いなど）がありますか？
-  - そのカードは、あなたの手札のカードとマッチしますか？（10, JQK の場合はランク一致、それ以外はスート or ランク一致）
-- **手札カード(H)の選択:**
-  - どの手札を使いますか？ 10, J, Q, K を起点にする場合は、そのランクを持つ手札が必要になります。
-  - スートが重要な場面（特定の未発見エースを狙う時）か、ランクが重要になる場面か？
-  - 将来のために温存したい手札はありませんか？
-- **対象カード(T)の選択:**
-  - 起点カード(F)の周りにある複数の裏向きカードの中から、どれを公開しますか？
-  - ランドマーク（エース）に最も近いのはどれですか？
-  - **場の状況を考慮:** 現在**表になっている**カード全体を見て判断します。未発見のエースに必要なスートや、そのターゲット `T` の周囲に見えるカードに基づき、どの `T` を選ぶのが最も有利に見えますか？
-  - 公開することで、次に繋がりやすくなる（他の表カードに隣接するなど）のはどれですか？
+- **Choosing the Starting Card (F):**
+  - Which face-up card will you choose as your starting point? Using 10, J, Q, K cards requires special conditions (rank match), but are they strategically important?
+  - Is there a face-down card you want to reveal (e.g., close to a corner) next to it?
+  - Does it match a card in your hand? (Rank match for 10, JQK; suit or rank match for others)
+- **Choosing the Hand Card (H):**
+  - Which hand card will you use? If starting with a 10, J, Q, or K, you'll need a hand card of that rank.
+  - Is the suit important (when aiming for a specific undiscovered Ace), or is the rank more critical?
+  - Are there any hand cards you want to save for later?
+- **Choosing the Target Card (T):**
+  - Among the multiple face-down cards around the starting card (F), which one will you reveal?
+  - Which one is closest to a landmark (Ace)?
+  - **Consider the board state:** Judge based on all currently **face-up** cards. Based on the suits needed for undiscovered Aces or the visible cards around target `T`, which `T` seems most advantageous to choose?
+  - Which reveal is more likely to lead to subsequent moves (e.g., becoming adjacent to other face-up cards)?
 
-### バランスの考慮
+### Balancing Considerations
 
-- **情報収集 vs 目標達成:** 序盤は様々な場所を公開して**場の状況を把握する**のが有効かもしれませんが、手札は有限です。適切なタイミングでランドマーク（角）攻略に切り替える必要があります。
-- **手札管理:** 強力な手札（多くの起点とマッチする、10, JQK とマッチするランクなど）をいつ使うか、あるいはリスクの低い手札で場の状況を探るか、慎重に判断しましょう。
-- **手札交換の活用:** 公開できる手がない場合や、より良い手札を求める場合に手札交換（アクション B）を戦略的に利用しましょう。ただし、山札の枚数には限りがあり、**なくなると敗北する**ため注意が必要です。
+- **Information Gathering vs. Goal Achievement:** In the early game, revealing various locations to **understand the board state** might be effective, but your hand is finite. You need to switch to targeting landmarks (corners) at the right time.
+- **Hand Management:** Carefully decide when to use powerful hand cards (those matching many starting points, or ranks matching 10, JQK) or whether to probe the board with lower-risk hand cards.
+- **Utilizing Hand Exchange:** Strategically use hand exchange (Action B) when no reveal actions are possible or when seeking better hand cards. However, be mindful that the draw pile is limited, and **running out leads to defeat**.
 
-## ヒントとコツ
+## Hints and Tips
 
-- 場の表向きカードが増えるほど、手札を活用できる機会が増えます。
-- どのエースがまだ見つかっていないか常に意識し、それに対応するスートの手札の価値を考えましょう。
-- 複数の選択肢がある場合、一手先、二手先を読んで最も有利な手を選びましょう。
+- The more face-up cards on the field, the more opportunities you have to utilize your hand.
+- Always be aware of which Aces are still undiscovered and consider the value of hand cards with corresponding suits.
+- When multiple options are available, think one or two steps ahead to choose the most advantageous move.
