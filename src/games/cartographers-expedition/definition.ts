@@ -9,7 +9,7 @@ import {
 import { createDeck, shuffleDeck } from "../../utils/cardUtils.ts";
 import { createRng } from "../../utils/rng.ts";
 
-// ゲームの状態を表すインターフェース (export を追加)
+// Interface representing the game state (export added)
 export interface ExpeditionState extends BaseGameState {
   grid: ((Card & { faceUp: boolean }) | null)[][];
   hand: Card[];
@@ -18,7 +18,7 @@ export interface ExpeditionState extends BaseGameState {
   moves: number;
 }
 
-// アクションのパラメータを表すインターフェース (export を追加)
+// Interface representing action parameters (export added)
 export interface RevealAdjacentAction extends BaseAction {
   type: "revealAdjacent";
   payload: {
@@ -33,11 +33,11 @@ export interface RevealAdjacentAction extends BaseAction {
 export interface DiscardAndDrawAction extends BaseAction {
   type: "discardAndDraw";
   payload: {
-    handIndex: number; // 捨てる手札のインデックス
+    handIndex: number; // Index of the hand card to discard
   };
 }
 
-// アクションの型エイリアス (export を追加)
+// Type alias for actions (export added)
 export type ExpeditionAction = RevealAdjacentAction | DiscardAndDrawAction;
 
 // --- Define Grid Size ---
@@ -56,7 +56,7 @@ export const CartographersExpedition: GameDefinition<
   gameId: "cartographers_expedition_v1_find_aces",
   gameName: "Cartographer's Expedition (Find Aces)",
   description:
-    "場のカードと一致する手札で隣接カードを公開し、四隅のエースを見つけるソリティア",
+    "A solitaire game where you reveal adjacent cards using matching hand cards to find the four corner Aces.",
 
   setupGame: (seed?: string): ExpeditionState => {
     const fullDeck = createDeck();
@@ -500,55 +500,51 @@ export const CartographersExpedition: GameDefinition<
     const gridRows = state.grid.length;
     const gridCols = state.grid[0]?.length ?? 0;
 
-    // --- NEW WIN Condition: All 4 corner Aces face up ---
-    const cornerPositions = [
-      { r: 0, c: 0 },
-      { r: 0, c: gridCols - 1 },
-      { r: gridRows - 1, c: 0 },
-      { r: gridRows - 1, c: gridCols - 1 },
+    // Check for win condition: All 4 corner Aces are faceUp
+    const cornerAces = [
+      state.grid[0][0],
+      state.grid[0][GRID_COLS - 1],
+      state.grid[GRID_ROWS - 1][0],
+      state.grid[GRID_ROWS - 1][GRID_COLS - 1],
     ];
-    let acesFound = 0;
-    for (const pos of cornerPositions) {
-      const card = state.grid[pos.r]?.[pos.c];
-      if (card && card.faceUp && card.rank === "A") {
-        acesFound++;
-      } else {
-        break; // No need to check further if one corner isn't a face-up Ace
-      }
-    }
+    const acesFound = cornerAces.filter(
+      (card) => card && card.rank === "A" && card.faceUp
+    ).length;
 
     if (acesFound === 4) {
-      return { status: "WIN", reason: "四隅のエースを発見！" }; // "Found the 4 corner Aces!"
+      return { status: "WIN", reason: "Found the 4 corner Aces!" };
     }
 
     // --- NEW Lose Condition: Draw pile empty --- (MODIFIED: Added this check)
     if (state.drawPile.length === 0) {
-      return { status: "LOSE", reason: "山札がなくなりました" }; // "Draw pile is empty"
+      return { status: "LOSE", reason: "Draw pile is empty." };
     }
 
-    // --- Original Lose Condition: No valid moves --- (Kept as secondary check)
-    // Use the existing helper function, passing the state
-    const canReveal = hasRevealMoves(state);
-    const canDiscard =
-      state.hand.some((card) => !!card) && state.drawPile.length > 0; // Check if hand has cards and draw pile has cards
+    // Check for lose condition: No available moves
+    const availableActions = CartographersExpedition.getAvailableActions(state);
+    if (availableActions.length === 0) {
+      // Check if this is due to no cards in hand and no cards in draw pile
+      const canReveal = hasRevealMoves(state);
+      const canDiscard = state.hand.length > 0 && state.drawPile.length > 0; // Can always discard if hand and draw pile have cards
 
-    if (!canReveal && !canDiscard) {
-      // More specific loss reasons (will be less common now)
-      let reason = "有効な手がなくなりました"; // "No valid moves left"
-      // This condition might still occur if the hand is empty before the draw pile is empty,
-      // although with current rules that seems unlikely unless the initial hand is empty.
-      // Let's keep the specific reason check just in case.
-      if (
-        state.hand.every(
-          (card) => !card
-        ) /* && state.drawPile.length === 0 - This part is now covered above */
-      ) {
-        reason = "手札もなくなりました"; // Simplified reason as draw pile check is separate
+      if (!canReveal && !canDiscard) {
+        // More specific loss reasons (will be less common now)
+        let reason = "No valid moves left.";
+        // This condition might still occur if the hand is empty before the draw pile is empty,
+        // although with current rules that seems unlikely unless the initial hand is empty.
+        if (
+          state.hand.length === 0 &&
+          state.drawPile.length === 0 // Added check for draw pile explicitly
+          // state.field.every(row => row.every(cell => !cell || cell.faceUp))
+        ) {
+          reason = "Hand and draw pile are both empty."; // Simplified reason as draw pile check is separate
+        }
+        return { status: "LOSE", reason };
       }
-      return { status: "LOSE", reason };
+      // If only one type of action is impossible but the other is possible,
+      // or if draw pile is empty but reveal moves exist, game is ongoing.
     }
 
-    // Otherwise, game is ongoing
     return { status: "ONGOING" };
   },
 };

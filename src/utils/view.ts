@@ -99,9 +99,9 @@ export class CardView {
 
   // --- Flip animation properties ---
   isFlipping: boolean;
-  flipProgress: number; // 0 (開始) to 1 (終了)
-  targetIsFaceUp: boolean | null; // アニメーション終了時の isFaceUp の状態
-  flipSpeed: number; // アニメーションの速さ (1フレームあたりの進捗)
+  flipProgress: number; // 0 (start) to 1 (end)
+  targetIsFaceUp: boolean | null; // The state of isFaceUp when the animation ends
+  flipSpeed: number; // Animation speed (progress per frame)
 
   // --- Movement animation properties ---
   isMoving: boolean;
@@ -140,7 +140,7 @@ export class CardView {
     this.disappearSpeed = 0.1; // Speed for disappearing animation
   }
 
-  // Rank number を表示用文字列 (A, J, Q, K, T) に変換するヘルパーメソッド
+  // Helper method to convert rank number to display string (A, J, Q, K, T)
   getRankDisplayString(): string {
     if (this.rank === 0) {
       return "";
@@ -149,7 +149,7 @@ export class CardView {
       case 1:
         return "A";
       case 10:
-        return "f"; // ランク 10 の場合は 'f' を返す (cardCharacters[5] に対応)
+        return "f"; // Returns 'f' for rank 10 (corresponds to cardCharacters[5])
       case 11:
         return "J";
       case 12:
@@ -157,13 +157,13 @@ export class CardView {
       case 13:
         return "K";
       default:
-        return this.rank.toString(); // 2-9 はそのまま文字列として返す (text() で描画)
+        return this.rank.toString(); // 2-9 are returned as strings directly (drawn with text())
     }
   }
 
   // --- Flip animation start method ---
   startFlipAnimation(targetFaceUp: boolean) {
-    // 既にアニメーション中、または状態が変わらない場合は何もしない
+    // If already animating or the state doesn't change, do nothing
     if (this.isFlipping || this.isFaceUp === targetFaceUp) {
       return;
     }
@@ -181,7 +181,7 @@ export class CardView {
     this.flipProgress += this.flipSpeed;
 
     if (this.flipProgress >= 1) {
-      // アニメーション完了
+      // Animation complete
       this.isFaceUp = this.targetIsFaceUp!;
       this.isFlipping = false;
       this.flipProgress = 0;
@@ -242,64 +242,64 @@ export class CardView {
     this.updateMovement();
   }
 
-  // --- 描画メソッド (アニメーション対応) ---
+  // --- Drawing method (with animation support) ---
   draw() {
-    // アニメーション更新をここで行う
+    // Update animation here
     this.update();
 
     let currentScaleX = 1;
-    let showFace = this.isFaceUp; // デフォルトで現在の状態を表示
+    let showFace = this.isFaceUp; // Show current state by default
 
     if (this.isFlipping) {
-      // animationProgress (0 to 1) を scale.x (-1 to 1) に変換
-      // 0 -> 0.5 -> 1 (progress)  => 1 -> 0 -> -1 (scale.x前半) => 0 -> 1 (scale.x後半)
-      // Math.cos を使うと自然なイージングになる
+      // Convert animationProgress (0 to 1) to scale.x (-1 to 1)
+      // 0 -> 0.5 -> 1 (progress)  => 1 -> 0 -> -1 (scale.x first half) => 0 -> 1 (scale.x second half)
+      // Using Math.cos provides natural easing
       currentScaleX = Math.cos(this.flipProgress * PI);
 
-      // スケールが 0 をまたいだら表示内容を切り替える
+      // Switch displayed content when scale crosses 0
       if (currentScaleX < 0) {
-        showFace = this.targetIsFaceUp!; // ターゲットの状態を表示
-        currentScaleX *= -1; // 負のスケールは使わず、表示内容で反転を表現
+        showFace = this.targetIsFaceUp!; // Display the target state
+        currentScaleX *= -1; // Don't use negative scale; represent flip by changing content
       }
     }
 
-    // --- ハイライト枠描画 ---
+    // --- Draw highlight border ---
     if (this.isHighlighted) {
       color("red");
-      // スケール変更に対応するため rect を使用
+      // Use rect to support scaling
       rect(
-        this.pos.x - (this.size.x / 2 + 1), // 中心基準で描画
+        this.pos.x - (this.size.x / 2 + 1), // Draw centered
         this.pos.y - (this.size.y / 2 + 1),
         this.size.x + 2,
         this.size.y + 2
       );
     }
 
-    // --- 枠線 (スケール適用) ---
+    // --- Border (scaled) ---
     color("black");
-    // box 関数は scale を直接適用できないため、rect で描画
+    // box function cannot directly apply scale, so draw with rect
     const scaledWidth = this.size.x * currentScaleX;
     rect(
-      this.pos.x - scaledWidth / 2, // 中心基準で描画
+      this.pos.x - scaledWidth / 2, // Draw centered
       this.pos.y - this.size.y / 2,
       scaledWidth,
       this.size.y
     );
 
-    // --- 内側の背景 (スケールが小さすぎるときは描画しない) ---
+    // --- Inner background (don't draw if scale is too small) ---
     if (currentScaleX > 0.1) {
-      // 閾値
+      // Threshold
       const innerBgColor = this.isSelected ? "light_yellow" : "white";
       color(innerBgColor);
       const scaledInnerWidth = (this.size.x - 2) * currentScaleX;
       rect(
-        this.pos.x - scaledInnerWidth / 2, // 中心基準で描画
+        this.pos.x - scaledInnerWidth / 2, // Draw centered
         this.pos.y - (this.size.y - 2) / 2,
         scaledInnerWidth,
         this.size.y - 2
       );
 
-      // --- カード内容描画 (スケール適用) ---
+      // --- Draw card content (scaled) ---
       if (showFace) {
         if (this.suit === "joker") {
           color("black");
@@ -337,7 +337,7 @@ export class CardView {
           }
         }
       } else {
-        // 裏面の描画 (スケール適用)
+        // Draw card back (scaled)
         color("blue");
         const charCenterX = ceil(this.pos.x - 1);
         const charOptions: LetterOptions = { scale: { x: currentScaleX } };
@@ -366,10 +366,10 @@ export class CardView {
   }
 }
 
-// --- 吹き出し表示クラス (機能拡張) ---
+// --- Speech bubble display class (extended functionality) ---
 export class SpeechBubbleView {
   pos: Vector;
-  size: Vector; // 幅は固定、高さは動的に変わる
+  size: Vector; // Width is fixed, height changes dynamically
   text: string;
   isVisible: boolean;
   textColor: Color | number;
@@ -379,11 +379,11 @@ export class SpeechBubbleView {
   tailDirection: "up" | "down" | "none";
   tailChar: string;
 
-  // --- 追加: テキスト描画関連の定数 ---
-  private readonly padding = { x: 3, y: 2 }; // 内側の左右・上下パディング
-  private readonly lineSpacing = 6; // 小さい文字の行の高さ (仮定)
-  private readonly charWidth = 4; // 小さい文字の幅 (仮定)
-  private readonly minHeight = 15; // 吹き出しの最小高さ
+  // --- Added: Constants related to text drawing ---
+  private readonly padding = { x: 3, y: 2 }; // Inner left/right and top/bottom padding
+  private readonly lineSpacing = 6; // Line height for small text (assumption)
+  private readonly charWidth = 4; // Width of small characters (assumption)
+  private readonly minHeight = 15; // Minimum height of the speech bubble
 
   constructor(
     x: number,
@@ -397,7 +397,7 @@ export class SpeechBubbleView {
     }
   ) {
     this.pos = vec(x, y);
-    // 幅は固定、高さは初期値 (後で計算)
+    // Width is fixed, height is initial value (calculated later)
     this.size = vec(width, Math.max(initialHeight, this.minHeight));
     this.text = initialText;
     this.isVisible = false;
@@ -408,17 +408,17 @@ export class SpeechBubbleView {
     this.tailDirection = options?.direction ?? "down";
     this.tailChar = "h";
 
-    // --- 初期テキストに基づいて高さを計算 ---
+    // --- Calculate height based on initial text ---
     this._calculateAndSetHeight(this.text);
   }
 
-  // --- 追加: テキストに基づいて高さを計算・設定するメソッド ---
+  // --- Added: Method to calculate and set height based on text ---
   private _calculateAndSetHeight(textToLayout: string) {
     const maxCharsPerLine = Math.floor(
       (this.size.x - this.padding.x * 2) / this.charWidth
     );
     if (maxCharsPerLine <= 0) {
-      this.size.y = this.minHeight; // 幅が狭すぎる場合
+      this.size.y = this.minHeight; // If width is too narrow
       return;
     }
 
@@ -430,29 +430,29 @@ export class SpeechBubbleView {
       if (testLine.length <= maxCharsPerLine) {
         currentLine = testLine;
       } else {
-        lines++; // 改行
-        currentLine = word; // 次の行の開始
+        lines++; // New line
+        currentLine = word; // Start of the next line
       }
     }
 
-    // 計算した行数に基づいて高さを決定
+    // Determine height based on the calculated number of lines
     const requiredHeight = lines * this.lineSpacing + this.padding.y * 2;
-    this.size.y = Math.max(requiredHeight, this.minHeight); // 最小高さを保証
+    this.size.y = Math.max(requiredHeight, this.minHeight); // Ensure minimum height
   }
 
   setText(newText: string) {
     if (this.text !== newText) {
       this.text = newText;
-      this._calculateAndSetHeight(this.text); // 高さを再計算
+      this._calculateAndSetHeight(this.text); // Recalculate height
     }
   }
 
   show(text?: string) {
     if (text && this.text !== text) {
-      this.setText(text); // setText内で高さ計算される
+      this.setText(text); // Height is calculated within setText
     } else if (!this.isVisible) {
-      // テキスト変更なしで表示だけする場合も念のため再計算
-      // (フォントサイズなどが将来変わる可能性を考慮)
+      // Recalculate height just in case, even when only showing without text change
+      // (Considering potential future changes to font size, etc.)
       this._calculateAndSetHeight(this.text);
     }
     this.isVisible = true;
@@ -475,18 +475,18 @@ export class SpeechBubbleView {
       return;
     }
 
-    // 背景を描画 (サイズは計算済みの this.size を使用)
+    // Draw background (uses pre-calculated this.size)
     color(this.backgroundColor);
     rect(this.pos.x, this.pos.y, this.size.x, this.size.y);
 
-    // 枠線を描画 (サイズは計算済みの this.size を使用)
+    // Draw border (uses pre-calculated this.size)
     color(this.borderColor);
-    rect(this.pos.x, this.pos.y, this.size.x, 1); // 上
-    rect(this.pos.x, this.pos.y + this.size.y - 1, this.size.x, 1); // 下
-    rect(this.pos.x, this.pos.y + 1, 1, this.size.y - 2); // 左
-    rect(this.pos.x + this.size.x - 1, this.pos.y + 1, 1, this.size.y - 2); // 右
+    rect(this.pos.x, this.pos.y, this.size.x, 1); // Top
+    rect(this.pos.x, this.pos.y + this.size.y - 1, this.size.x, 1); // Bottom
+    rect(this.pos.x, this.pos.y + 1, 1, this.size.y - 2); // Left
+    rect(this.pos.x + this.size.x - 1, this.pos.y + 1, 1, this.size.y - 2); // Right
 
-    // テキストを描画 (計算ロジックはほぼ同じだが、はみ出しチェックは不要)
+    // Draw text (calculation logic is almost the same, but overflow check is not needed)
     color(this.textColor);
     const textOptions: LetterOptions = { isSmallText: true };
     const maxCharsPerLine = Math.floor(
@@ -495,7 +495,7 @@ export class SpeechBubbleView {
     let lineY = this.pos.y + this.padding.y + 2;
 
     if (maxCharsPerLine > 0) {
-      // 幅が有効な場合のみ描画
+      // Draw only if width is valid
       const words = this.text.split(" ");
       let currentLine = "";
       for (const word of words) {
@@ -513,7 +513,7 @@ export class SpeechBubbleView {
       }
     }
 
-    // しっぽの描画 (Y座標の計算基準が変わることに注意)
+    // Draw tail (note that the Y-coordinate calculation basis changes)
     if (this.tailDirection !== "none") {
       let tailX: number;
       let tailY: number;

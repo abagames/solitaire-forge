@@ -95,7 +95,7 @@ export type CatalystReactionAction = PlayCatalystAction; // Only PlayCatalyst is
 // --- Constants ---
 const MAX_HAND_SIZE = 3;
 const INITIAL_FIELD_SIZE = 8;
-const MAX_FIELD_SIZE = 12; // フィールドの最大枚数を12枚に設定
+const MAX_FIELD_SIZE = 12; // Set the maximum number of cards on the field to 12
 
 // --- Helper Function for Automatic Reactions ---
 
@@ -187,7 +187,7 @@ export const catalystReactionGameDefinition: GameDefinition<
     }
     const shuffledDeck = shuffle(fullDeck, seed);
 
-    const fieldSize = INITIAL_FIELD_SIZE; // 初期枚数を定数で指定
+    const fieldSize = INITIAL_FIELD_SIZE; // Specify the initial number of cards with a constant
     let initialFieldDeal = shuffledDeck.slice(0, fieldSize);
     let currentDeck = shuffledDeck.slice(fieldSize);
 
@@ -293,15 +293,15 @@ export const catalystReactionGameDefinition: GameDefinition<
     const actions: CatalystReactionAction[] = [];
     // Player only needs cards in hand. Placement is always possible.
     if (state.hand.length > 0) {
-      // フィールドが最大枚数に達している場合は特別処理
+      // Special handling if the field has reached the maximum number of cards
       if (state.field.length >= MAX_FIELD_SIZE) {
-        // 手札の各カードについて、反応が起きる位置のみをアクションに追加
+        // For each card in hand, add actions only for positions that cause a reaction
         for (const handCard of state.hand) {
           for (let pos = 1; pos < state.field.length; pos++) {
             const leftCard = state.field[pos - 1];
             const rightCard = state.field[pos];
 
-            // 3枚すべてが同じランクまたは同じスート
+            // All 3 cards have the same rank or the same suit
             const sameRank =
               leftCard.rank === handCard.rank &&
               handCard.rank === rightCard.rank;
@@ -319,7 +319,7 @@ export const catalystReactionGameDefinition: GameDefinition<
           }
         }
       } else {
-        // 通常の処理: すべての位置を許可
+        // Normal processing: allow all positions
         for (const handCard of state.hand) {
           // Generate positions from 0 (left end) to field.length (right end)
           for (let i = 0; i <= state.field.length; i++) {
@@ -368,14 +368,14 @@ export const catalystReactionGameDefinition: GameDefinition<
         const rightCard = newState.field[rightCardIndex]; // Card at the insertion point index
 
         // Check PLAYER reaction condition
-        // 3枚すべて同じランクの場合
+        // If all 3 cards have the same rank
         const sameRank =
           leftCard &&
           rightCard &&
           leftCard.rank === catalystCard.rank &&
           catalystCard.rank === rightCard.rank;
 
-        // 3枚すべて同じスートの場合
+        // If all 3 cards have the same suit
         const sameSuit =
           leftCard &&
           rightCard &&
@@ -455,19 +455,19 @@ export const catalystReactionGameDefinition: GameDefinition<
       };
     }
 
-    // 新しい敗北条件: 場札が最大枚数に達していて、手札のどのカードも反応が起きない場合
+    // New lose condition: If the field is full and no card in hand can cause a reaction
     if (state.field.length >= MAX_FIELD_SIZE) {
-      // 手札の各カードについて、反応が起きる位置があるかチェック
+      // Check if any card in hand can cause a reaction
       let canCauseReaction = false;
 
-      // 手札の各カードをチェック
+      // Check each card in hand
       for (const handCard of state.hand) {
-        // 各位置についてチェック (フィールドの中間位置のみ)
+        // Check each position (only intermediate positions on the field)
         for (let pos = 1; pos < state.field.length; pos++) {
           const leftCard = state.field[pos - 1];
           const rightCard = state.field[pos];
 
-          // 3枚すべてが同じランクまたは同じスートかチェック
+          // Check if all 3 cards have the same rank or the same suit
           const sameRank =
             leftCard.rank === handCard.rank && handCard.rank === rightCard.rank;
 
@@ -476,13 +476,13 @@ export const catalystReactionGameDefinition: GameDefinition<
 
           if (sameRank || sameSuit) {
             canCauseReaction = true;
-            break; // 一つでも反応の可能性があれば十分
+            break; // Sufficient if at least one reaction is possible
           }
         }
         if (canCauseReaction) break;
       }
 
-      // どのカードも反応を起こせない場合は敗北
+      // If no card can cause a reaction, it's a loss
       if (!canCauseReaction) {
         return {
           status: "LOSE",

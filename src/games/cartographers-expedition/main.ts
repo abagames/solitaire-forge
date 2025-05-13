@@ -13,48 +13,48 @@ const enableRecording = false;
 let gameState: ExpeditionState | null = null;
 let selectedHandIndex: number | null = null;
 let selectedSourceCell: { r: number; c: number } | null = null;
-// --- 追加: ゲーム状態と終了理由を保持する変数 ---
+// --- ADDED: Variables to hold game state and end reason ---
 let gameStatus: "ONGOING" | "WIN" | "LOSE" = "ONGOING";
 let gameOverReason: string | null = null;
-// --- 追加: 捨てモード状態 ---
+// --- ADDED: Discard mode state ---
 let isDiscardModeActive: boolean = false;
 
-// --- 追加: チュートリアル状態変数 ---
-type TutorialStep = 1 | 2 | 3 | 4 | 5 | 6 | "OFF"; // ステップ6を追加
-let tutorialStep: TutorialStep = 1; // 初期ステップ
+// --- ADDED: Tutorial state variables ---
+type TutorialStep = 1 | 2 | 3 | 4 | 5 | 6 | "OFF"; // Step 6 added
+let tutorialStep: TutorialStep = 1; // Initial step
 
-// --- 追加: 前フレームのチュートリアルステップ ---
+// --- ADDED: Tutorial step from the previous frame ---
 let previousTutorialStep: TutorialStep | null = null;
 
-// --- 追加: 吹き出しインスタンス ---
-// 位置やサイズは手札エリア付近に仮設定
+// --- ADDED: Speech bubble instance ---
+// Position and size are provisionally set near the hand area
 let tutorialBubble: SpeechBubbleView | null = null;
 
-// --- このセッションで表示済みのチュートリアルステップ ---
+// --- Tutorial steps shown in this session ---
 let shownTutorialStepsThisSession: Set<TutorialStep> = new Set();
 
-// --- 追加: 盤面カードビューを保持する2次元配列 ---
+// --- ADDED: 2D array to hold grid card views ---
 let gridCardViews: (CardView | null)[][] = [];
-// --- 追加: 手札カードビューを保持する配列 ---
+// --- ADDED: Array to hold hand card views ---
 let handCardViews: (CardView | null)[] = []; // Allow null for empty slots
 
-// --- グリッドとカード表示用定数 ---
+// --- Grid and card display constants ---
 const GRID_START_X = 5;
 const GRID_START_Y = 10;
 const CARD_DISPLAY_WIDTH = 12;
 const CARD_DISPLAY_HEIGHT = 18;
 const VIEW_SIZE = { x: 70, y: 130 }; // Add view size constant
 
-// --- 情報表示用の定数 (宣言順序修正) ---
+// --- Constants for information display (declaration order corrected) ---
 const LANDMARK_TEXT_X = 5;
 const LANDMARK_TEXT_Y = 5;
-const HAND_CARD_START_X = GRID_START_X; // HAND_CARD_START_X を先に宣言
+const HAND_CARD_START_X = GRID_START_X; // HAND_CARD_START_X declared first
 const HAND_LABEL_Y = GRID_START_Y + 5 * CARD_DISPLAY_HEIGHT + 9;
-const DRAW_TEXT_X = HAND_CARD_START_X; // HAND_CARD_START_X を使用
+const DRAW_TEXT_X = HAND_CARD_START_X; // Using HAND_CARD_START_X
 const DRAW_TEXT_Y = HAND_LABEL_Y - 5;
 const HAND_CARD_Y = HAND_LABEL_Y;
 
-// --- ゴミ箱アイコン用の定数 (X座標を修正) ---
+// --- Constants for trash icon (X-coordinate corrected) ---
 const DISCARD_ICON_X = VIEW_SIZE.x - 5; // Use VIEW_SIZE.x
 const DISCARD_ICON_Y = VIEW_SIZE.y - 5; // Use VIEW_SIZE.y
 const DISCARD_ICON_WIDTH = 6;
@@ -87,28 +87,28 @@ function canSelectHandForSource(sourceCell: { r: number; c: number }): boolean {
       handCard &&
       (handCard.suit === sourceCard.suit || handCard.rank === sourceCard.rank)
     ) {
-      return true; // マッチする手札が見つかった
+      return true; // Matching hand card found
     }
   }
-  return false; // マッチする手札がなかった
+  return false; // No matching hand card found
 }
 
-// --- チュートリアル吹き出しの状態を更新/表示する関数 (変更時のみ呼び出される想定) ---
+// --- Function to update/display tutorial bubble state (intended to be called only on change) ---
 function updateTutorialBubble(
   currentStep: TutorialStep,
   shownSteps: Set<TutorialStep>,
   bubble: SpeechBubbleView | null
-  // currentSourceSelection は不要になった
+  // currentSourceSelection is no longer needed
 ): void {
   if (!bubble) return;
 
-  // チュートリアルがOFFなら隠す
+  // Hide if tutorial is OFF
   if (currentStep === "OFF") {
     bubble.hide();
     return;
   }
 
-  const bubbleMargin = 5; // 共通マージン
+  const bubbleMargin = 5; // Common margin
   // --- MODIFIED: Check if already shown ---
   const alreadyShown = shownSteps.has(currentStep);
 
@@ -125,57 +125,34 @@ function updateTutorialBubble(
   bubble.show();
 
   if (currentStep === 1) {
-    // --- 修正: 表示済みなら hide() は削除 ---
-    // if (!shownSteps.has(1)) { // Condition removed
     bubble.setText("Click a face-up card.");
     const centerCardTopY = GRID_START_Y + 2 * CARD_DISPLAY_HEIGHT;
     const bubbleX = GRID_START_X + 2.5 * CARD_DISPLAY_WIDTH - bubble.size.x / 2;
     const bubbleY = centerCardTopY - bubble.size.y - bubbleMargin + 1;
     bubble.pos.set(bubbleX, bubbleY);
     bubble.setTail("center", "down");
-    // bubble.show(); // Moved up
-    // shownSteps.add(1); // Moved up
-    // } else {
-    //   bubble.hide(); // 表示済みなら隠す // Removed
-    // }
   } else if (currentStep === 2) {
-    // --- 修正: 表示済みなら hide() は削除 ---
-    // if (!shownSteps.has(2)) { // Condition removed
     bubble.setText("OK! Now click a Hand card (match suit or rank).");
     const handTopY = HAND_CARD_Y;
     const bubbleX = HAND_CARD_START_X + 5;
     const bubbleY = handTopY - bubble.size.y - bubbleMargin + 3;
     bubble.pos.set(bubbleX, bubbleY);
     bubble.setTail("left", "none");
-    // bubble.show(); // Moved up
-    // shownSteps.add(2); // Moved up
-    // } else {
-    //   bubble.hide(); // 表示済みなら隠す // Removed
-    // }
   } else if (currentStep === 3) {
-    // --- 修正: 表示済みなら hide() は削除 ---
-    // if (!shownSteps.has(3)) { // Condition removed
     bubble.setText(
       "No match? Click the trash icon, then a hand card to discard."
     );
-    // 位置をゴミ箱アイコン(65, 125)の上に調整
+    // Adjust position above the trash icon (65, 125)
     const bubbleX = DISCARD_ICON_X - bubble.size.x * 0.9;
     const bubbleY =
       DISCARD_ICON_Y -
       bubble.size.y -
       bubbleMargin -
       DISCARD_ICON_HEIGHT / 2 -
-      5; // アイコンの上
+      5; // Above the icon
     bubble.pos.set(bubbleX, bubbleY);
-    bubble.setTail("right", "down"); // Tail: right, down (一致)
-    // bubble.show(); // Moved up
-    // shownSteps.add(3); // Moved up
-    // } else {
-    //   bubble.hide(); // 表示済みなら隠す // Removed
-    // }
+    bubble.setTail("right", "down"); // Tail: right, down (matches)
   } else if (currentStep === 4) {
-    // --- 修正: 表示済みなら hide() は削除 ---
-    // if (!shownSteps.has(4)) { // Condition removed
     bubble.setText("Good! Click a face-down card next to a Selected card.");
     const sourceBottomY = GRID_START_Y + 3 * CARD_DISPLAY_HEIGHT; // Approximate original Y reference
     let bubbleX = GRID_START_X + 2.5 * CARD_DISPLAY_WIDTH - bubble.size.x / 2;
@@ -183,13 +160,7 @@ function updateTutorialBubble(
     bubbleX = clamp(bubbleX, 0, VIEW_SIZE.x - bubble.size.x); // Use VIEW_SIZE.x
     bubble.setTail("center", "none"); // Revert Tail: center, none
     bubble.pos.set(bubbleX, bubbleY); // Position seems roughly consistent
-    // bubble.show(); // Moved up
-    // shownSteps.add(4); // Moved up
-    // } else {
-    //   bubble.hide(); // 表示済みなら隠す // Removed
-    // }
   } else if (currentStep === 5) {
-    // if (!shownSteps.has(5)) { // Condition removed
     bubble.setText(
       "10, J, Q, K are special! Need matching rank (J for J, etc.) to reveal from here."
     );
@@ -197,25 +168,14 @@ function updateTutorialBubble(
     const bubbleY = GRID_START_Y; // Revert Y position to top edge
     bubble.pos.set(clamp(bubbleX, 0, VIEW_SIZE.x - bubble.size.x), bubbleY); // Use VIEW_SIZE.x
     bubble.setTail("center", "none"); // Revert Tail: center, none
-    // bubble.show(); // Moved up
-    // shownSteps.add(5); // Moved up
-    // } else {
-    //   bubble.hide(); // Removed
-    // }
   } else if (currentStep === 6) {
-    // if (!shownSteps.has(6)) { // Condition removed, handled by general show/hide logic
     bubble.setText("Goal: Reveal 4 corner Aces (A)! Lose if draw pile empty!");
     const bubbleX = GRID_START_X + 2.5 * CARD_DISPLAY_WIDTH - bubble.size.x / 2;
     const bubbleY = GRID_START_Y; // Revert Y position to top edge
     bubble.pos.set(clamp(bubbleX, 0, VIEW_SIZE.x - bubble.size.x), bubbleY); // Use VIEW_SIZE.x
     bubble.setTail("center", "none"); // Revert Tail: center, none
-    // bubble.show(); // Moved up
-    // shownSteps.add(6); // Moved up and handled above
-    // } else {
-    //   bubble.hide(); // Removed
-    // }
   } else {
-    // 想定外のステップの場合は隠す
+    // Hide if step is unexpected
     bubble.hide();
   }
 }

@@ -23,9 +23,9 @@ import { YourGameBasicAI } from "./games/[your-game-name]/ai.ts"; // Assuming AI
 
 /*
 // Import the new game and AI
-import { Definition } from "./games/[ゲーム名 (英語)(kebab-case)]/definition.ts";
+import { Definition } from "./games/[your-game-name-kebab-case]/definition.ts";
 // Import the AI from its new file
-import { Ai } from "./games/[ゲーム名 (英語)(kebab-case)]/ai.ts";
+import { Ai } from "./games/[your-game-name-kebab-case]/ai.ts";
 */
 // Remove placeholder declarations once imports are added
 declare const YourGameDefinition: GameDefinition<any, any>;
@@ -345,7 +345,7 @@ async function main() {
   // --- END UNCOMMENT ---
 
   // Run simulations for Basic AI
-  // --- UPDATED AI NAME DISPLAY ---
+  // --- Adjust the AI name displayed in the console if needed ---
   console.log('\n[Basic AI]'); // Adjust AI description if needed
   const basicSummary = runSimulations(
     YourGameDefinition, // Replace placeholder
@@ -354,7 +354,7 @@ async function main() {
     simulationSeedBasic,
     MAX_MOVES_PER_GAME
   );
-  // --- UPDATED AI NAME DISPLAY ---
+  // --- Replace placeholder for AI name in summary output ---
   printSummary(basicSummary, "[Your Basic AI Name]"); // Replace placeholder, e.g., "SimpleStrategyAI"
 
   console.log("-----------------------------------------");
