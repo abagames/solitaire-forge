@@ -1,18 +1,18 @@
-# Crisp Game Lib を使ったカードゲーム実装ガイド (Cartographer's Expedition 実装例より)
+# Guide to Implementing Card Games with Crisp Game Lib (from Cartographer's Expedition Implementation Example)
 
-このドキュメントは、`crisp-game-lib` を使用してブラウザベースのカードゲームを実装する際の基本的な手順とテクニックをまとめたものです。主に「Cartographer's Expedition」の実装過程で得られた知見に基づいています。
+This document summarizes the basic procedures and techniques for implementing browser-based card games using `crisp-game-lib`. It is primarily based on insights gained during the implementation of "Cartographer's Expedition."
 
-## 1. プロジェクトセットアップ
+## 1. Project Setup
 
-### 1.1. Vite の導入 (推奨)
+### 1.1. Introducing Vite (Recommended)
 
-**(注: 既に Vite が導入済みのプロジェクトでは、このセクションはスキップしてください)**
+**(Note: If your project already has Vite integrated, skip this section)**
 
-- 高速な開発サーバーとビルドプロセスを提供します。
-- `package.json` に `vite` を開発依存関係として追加します (`npm install vite --save-dev`)。
-- `scripts` に開発サーバー起動コマンドとビルドコマンドを設定します。
+- Provides a fast development server and build process.
+- Add `vite` as a development dependency to `package.json` (`npm install vite --save-dev`).
+- Set up development server start and build commands in `scripts`.
 
-  - **方法 A: コマンド引数でディレクトリ指定:**
+  - **Method A: Specify directory via command arguments:**
 
     ```json
     // package.json
@@ -26,31 +26,31 @@
     }
     ```
 
-  - **方法 B: `vite.config.js` (または `.ts`) で設定 (推奨):**
-    プロジェクトルートに設定ファイルを作成します。こちらの方がより詳細な設定が可能です。
+  - **Method B: Configure with `vite.config.js` (or `.ts`) (Recommended):**
+    Create a configuration file in the project root. This allows for more detailed settings.
 
     ```javascript
-    // vite.config.js 例
+    // vite.config.js example
     import { defineConfig } from "vite";
 
     export default defineConfig({
-      root: "src/games/your-game-name", // HTMLファイルがあるディレクトリ
-      // publicDir: 'public', // 静的ファイルがあるディレクトリ (rootからの相対パス)
+      root: "src/games/your-game-name", // Directory containing the HTML file
+      // publicDir: 'public', // Directory for static files (relative to root)
       build: {
-        // 出力先をプロジェクトルートからの相対パスで指定
+        // Specify output directory relative to project root
         outDir: "../../dist/your-game-name",
-        emptyOutDir: true, // ビルド時に出力先を空にする
+        emptyOutDir: true, // Empty the output directory on build
       },
       server: {
-        // open: true, // サーバー起動時に自動でブラウザを開く
+        // open: true, // Automatically open browser on server start
       },
     });
     ```
 
-    `vite.config.js` を使用する場合、`package.json` の `scripts` は引数なしで記述します。
+    When using `vite.config.js`, write the `scripts` in `package.json` without arguments.
 
     ```json
-    // package.json (vite.config.js 使用時)
+    // package.json (when using vite.config.js)
     {
       "scripts": {
         "dev": "vite",
@@ -60,11 +60,11 @@
     }
     ```
 
-### 1.2. HTML ファイル (`index.html`)
+### 1.2. HTML File (`index.html`)
 
-- 非常にシンプルです。
-- `crisp-game-lib` を利用するメインの TypeScript ファイル (`main.ts` など) を `<script type="module">` で読み込みます。
-- `body` は空でも構いません (ライブラリが Canvas を生成します)。
+- Very simple.
+- Load the main TypeScript file (`main.ts`, etc.) that uses `crisp-game-lib` with `<script type="module">`.
+- The `body` can be empty (the library will generate a Canvas).
 
   ```html
   <!DOCTYPE html>
@@ -83,106 +83,107 @@
   </html>
   ```
 
-## 2. Crisp Game Lib の初期化 (`main.ts`)
+## 2. Initializing Crisp Game Lib (`main.ts`)
 
-### 2.1. `init` 関数の呼び出し
+### 2.1. Calling the `init` Function
 
-- ゲームのエントリーポイントです。
-- `update` 関数、文字定義 (`characters`)、各種オプション (`options`) を渡します。
+- This is the entry point for the game.
+- Pass the `update` function, character definitions (`characters`), and various options (`options`).
 
   ```typescript
   // main.ts
   import "crisp-game-lib";
-  import { characters } from "../../utils/view.ts"; // 文字定義を別ファイルから読み込み
-  import { update } from "./update"; // update関数を別ファイルにすることも可
+  import { characters } from "../../utils/view.ts"; // Load character definitions from a separate file
+  import { update } from "./update"; // The update function can also be in a separate file
 
   init({
-    update, // 毎フレーム呼ばれる関数
-    characters, // 使用する文字・図形のパターン
+    update, // Function called every frame
+    characters, // Patterns for characters and shapes to use
     options: {
-      // ゲーム固有のオプション設定
-      viewSize: { x: 70, y: 130 }, // 画面サイズ
-      isShowingScore: false, // スコア表示の有無
-      isSoundEnabled: false, // サウンドの有無
-      // isUsingSmallText: true, // 全体のテキストを小さくする場合 (v1.3.0時点では text() オプションで指定)
-      // theme: "pixel", // テーマの指定
+      // Game-specific option settings
+      viewSize: { x: 70, y: 130 }, // Screen size
+      isShowingScore: false, // Whether to display the score
+      isSoundEnabled: false, // Whether sound is enabled
+      // isUsingSmallText: true, // To make all text smaller (as of v1.3.0, specify with text() option)
+      // theme: "pixel", // Theme specification
     },
   });
   ```
 
-### 2.2. `update` 関数
+### 2.2. `update` Function
 
-- ゲームのメインループです。毎フレーム呼び出されます。
-- 主な役割（実行順）:
-  - ゲーム状態の初期化 (初回フレームまたはリトライ時)
-  - **チュートリアル状態の更新** (ステップ変更検知)
-  - プレイヤー入力の処理
-  - ゲームロジックの更新 (アクション適用など)
-  - ゲーム終了判定
-  - 画面描画
-- **状態変数:** `update` 関数のスコープ外（モジュールスコープ）で、ゲームの状態 (`gameState`)、プレイヤーの選択状態 (`selectedHandIndex`, `selectedSourceCell`)、ゲーム進行ステータス (`gameStatus`, `gameOverReason`)、チュートリアル状態 (`tutorialStep`, `previousTutorialStep` など) を保持する変数を定義します。
+- The main game loop. Called every frame.
+- Main responsibilities (in order of execution):
+  - Initialize game state (on the first frame or on retry)
+  - **Update tutorial state** (detect step changes)
+  - Process player input
+  - Update game logic (apply actions, etc.)
+  - Check for game end
+  - Draw the screen
+- **State Variables:** Define variables outside the scope of the `update` function (module scope) to hold game state (`gameState`), player selection state (`selectedHandIndex`, `selectedSourceCell`), game progress status (`gameStatus`, `gameOverReason`), and tutorial state (`tutorialStep`, `previousTutorialStep`, etc.).
 
   ```typescript
   // main.ts (module scope)
-  import { ExpeditionState } from "./game.ts";
-  import { SpeechBubbleView } from "../../utils/view.ts";
+  import { ExpeditionState } from "./game.ts"; // Assuming game.ts defines this type
+  import { SpeechBubbleView } from "../../utils/view.ts"; // Assuming view.ts defines this class
 
   let gameState: ExpeditionState | null = null;
   let selectedHandIndex: number | null = null;
   let selectedSourceCell: { r: number; c: number } | null = null;
   let gameStatus: "ONGOING" | "WIN" | "LOSE" = "ONGOING";
   let gameOverReason: string | null = null;
-  type TutorialStep = /*...*/ | "OFF";
-  let tutorialStep: TutorialStep = 1;
+  type TutorialStep = /*...*/ | "OFF"; // Define your tutorial steps
+  let tutorialStep: TutorialStep = 1; // Or your initial step
   let previousTutorialStep: TutorialStep | null = null;
   let tutorialBubble: SpeechBubbleView | null = null;
   let shownTutorialStepsThisSession: Set<TutorialStep> = new Set();
 
   function update() {
-    // 1. 初期化 (gameState === null の場合)
+    // 1. Initialization (if gameState === null)
     if (!gameState) {
-      gameState = /*...*/;
+      gameState = /* Initialize your game state */;
       selectedHandIndex = null;
-      // ... 他の状態リセット ...
-      tutorialStep = 1;
+      // ... Reset other states ...
+      tutorialStep = 1; // Or your initial step
       previousTutorialStep = null;
       shownTutorialStepsThisSession.clear();
-      // ... tutorialBubble の初期化 ...
+      // ... Initialize tutorialBubble ...
     }
 
-    // 2. チュートリアル更新 (変更検知)
+    // 2. Update tutorial (detect changes)
     if (tutorialStep !== previousTutorialStep && tutorialBubble) {
-      updateTutorialBubble(/*...*/);
+      updateTutorialBubble(/* Pass necessary arguments, e.g., tutorialStep, shownTutorialStepsThisSession, tutorialBubble */);
       previousTutorialStep = tutorialStep;
     }
 
-    // 3. 入力処理 (gameStatus === "ONGOING" の場合)
+    // 3. Process input (if gameStatus === "ONGOING")
     if (gameStatus === "ONGOING" && input.isJustPressed) {
-      // ... クリック判定、状態更新、アクション実行 ...
-      // tutorialStep もここで更新される場合がある
+      // ... Click detection, state updates, action execution ...
+      // tutorialStep might also be updated here
     } else if (gameStatus !== "ONGOING" && input.isJustPressed) {
-      // ゲーム終了後のリトライ処理
-      gameState = null; // 次フレームで初期化へ
+      // Retry logic after game ends
+      gameState = null; // To re-initialize next frame
     }
 
-    // 4. 描画 (gameState が存在する場合)
+    // 4. Drawing (if gameState exists)
     if (gameState) {
-      // ... 盤面、手札、情報、アイコン、吹き出し、終了メッセージ描画 ...
+      // ... Draw board, hand, information, icons, speech bubble, end message ...
     } else {
-      // ローディング表示など
+      // Loading display, etc.
     }
 
-    // 5. チュートリアルステップ遷移 (フレームの最後)
-    if (tutorialStep === 5 || tutorialStep === 6) {
-       tutorialStep = 1; // この変更は次フレームの変更検知で処理される
+    // 5. Tutorial step transition (at the end of the frame)
+    // Example: if a step is completed, move to another or back to a default
+    if (tutorialStep === 5 || tutorialStep === 6) { // Example condition
+       tutorialStep = 1; // This change will be processed by change detection next frame
     }
   }
   ```
 
-### 2.3. 文字・図形定義 (`view.ts` など)
+### 2.3. Character and Shape Definitions (`view.ts`, etc.)
 
-- `crisp-game-lib` は ASCII アートライクな文字パターンで図形を描画します。
-- カードのスート、ランク、アイコンなどを定義した `characters` 配列を `init` に渡します。
+- `crisp-game-lib` draws shapes using ASCII art-like character patterns.
+- Pass an array of `characters` defining card suits, ranks, icons, etc., to `init`.
   ```typescript
   // src/utils/view.ts
   export const characters = [
@@ -193,41 +194,41 @@
   l l l
     l
    lll
-  `, // 'a': スペードなど
-    // ... 他のスート、ランク('f'を10にするなど)、アイコン('g'をゴミ箱にするなど)
+  `, // 'a': Spade, for example
+    // ... Other suits, ranks ('f' for 10, etc.), icons ('g' for trash can, etc.)
   ];
   ```
 
-## 3. ゲームロジックの分離 (`game.ts`)
+## 3. Separating Game Logic (`game.ts`)
 
-- 描画や入力処理と、ゲームのルール・状態管理を分離するとコードの見通しが良くなります。
+- Separating drawing and input processing from game rules and state management improves code readability.
 
-### 3.1. 型定義 (`types.ts` も利用)
+### 3.1. Type Definitions (also using `types.ts`)
 
-- **ゲーム状態 (State):** ゲームの状況を表すデータ構造を定義します (例: `ExpeditionState`)。盤面、手札、山札、進行状況などを含みます。
+- **Game State (State):** Define a data structure representing the game's situation (e.g., `ExpeditionState`). Include board, hand, draw pile, progress, etc.
 
   ```typescript
-  // src/types.ts
+  // src/types.ts (example)
   export type Suit = "SPADE" | "HEART" | "DIAMOND" | "CLUB";
   export type Rank = "A" | "2" | /*...*/ | "K";
   export interface Card { suit: Suit; rank: Rank; id: string; }
-  export interface BaseGameState { /* ... */ }
+  export interface BaseGameState { /* ... common properties ... */ }
 
   // src/games/your-game-name/game.ts
-  import { BaseGameState, Card } from "../../types.ts";
+  import { BaseGameState, Card } from "../../types.ts"; // Adjust path as needed
   export interface YourGameState extends BaseGameState {
     grid: (Card & { faceUp: boolean } | null)[][];
     hand: Card[];
     drawPile: Card[];
     discardPile: Card[];
-    // ... その他ゲーム固有の状態
+    // ... Other game-specific states
   }
   ```
 
-- **アクション (Action):** プレイヤーが実行可能な操作を型として定義します (例: `ExpeditionAction`)。識別用の `type` と、詳細情報を持つ `payload` を含むことが多いです。
+- **Action (Action):** Define types for operations the player can perform (e.g., `ExpeditionAction`). Often includes a `type` for identification and a `payload` for details.
   ```typescript
   // src/games/your-game-name/game.ts
-  import { BaseAction } from "../../types.ts";
+  import { BaseAction } from "../../types.ts"; // Assuming a BaseAction type exists
   export interface RevealAdjacentAction extends BaseAction {
     type: "revealAdjacent";
     payload: { handIndex: number; sourceRow: number /*...*/ };
@@ -239,21 +240,24 @@
   export type YourGameAction = RevealAdjacentAction | DiscardAndDrawAction;
   ```
 
-### 3.2. ゲーム定義オブジェクト (`GameDefinition`)
+### 3.2. Game Definition Object (`GameDefinition`)
 
-- ゲームのルールを関数としてまとめたオブジェクトを作成します。
+- Create an object that groups game rules as functions.
 
   ```typescript
   // src/games/your-game-name/game.ts
-  import { GameDefinition } from "../../types.ts";
+  import { GameDefinition } from "../../types.ts"; // Assuming this type is defined
 
   export const YourGame: GameDefinition<YourGameState, YourGameAction> = {
     gameId: "your_game_id",
     gameName: "Your Game Name",
 
     setupGame: (seed?: string): YourGameState => {
-      // デッキ作成、シャッフル、盤面・手札への配置など
+      // Create deck, shuffle, deal to board/hand, etc.
       // ...
+      const initialState: YourGameState = {
+        /* ... */
+      };
       return initialState;
     },
 
@@ -261,26 +265,26 @@
       state: YourGameState,
       action: YourGameAction
     ): YourGameState => {
-      // state を直接変更せず、新しい state オブジェクトを返す (Immutability: 不変性)
-      // 理由:
-      // - 意図しない副作用を防ぐ
-      // - 状態変更が追跡しやすくなりデバッグが容易になる
-      // - 将来的に状態履歴管理 (Undo/Redo) を実装しやすくなる
+      // Return a new state object instead of modifying state directly (Immutability)
+      // Reasons:
+      // - Prevents unintended side effects
+      // - Makes state changes easier to track and debug
+      // - Facilitates future implementation of state history (Undo/Redo)
       const newState = {
         ...state,
-        // 注意: ネストされたオブジェクトや配列は別途ディープコピーが必要な場合がある
-        grid: state.grid.map((row) => [...row]), // 例: 2次元配列のディープコピー
-        hand: [...state.hand], // 配列のシャローコピー
+        // Note: Nested objects and arrays may require deep copying
+        grid: state.grid.map((row) => [...row]), // Example: deep copy of 2D array
+        hand: [...state.hand], // Shallow copy of array
       };
 
       if (action.type === "revealAdjacent") {
-        // payload を元にカードを公開、手札を捨てて補充など
-        // ★ 手札補充は splice を使い、元の index に挿入すると UX が良い
-        // newState.hand.splice(handIndex, 0, newCard);
+        // Reveal card based on payload, discard from hand, draw new, etc.
+        // ★ For hand replenishment, using splice to insert at the original index is good UX
+        // newState.hand.splice(action.payload.handIndex, 0, newCard);
       } else if (action.type === "discardAndDraw") {
-        // payload を元に手札を捨てて補充
-        // ★ 手札補充は splice を使い、元の index に挿入する
-        // newState.hand.splice(handIndex, 0, newCard);
+        // Discard from hand and draw based on payload
+        // ★ For hand replenishment, use splice to insert at the original index
+        // newState.hand.splice(action.payload.handIndex, 0, newCard);
       }
       // ...
       return newState;
@@ -289,168 +293,230 @@
     checkGameEnd: (
       state: YourGameState
     ): { status: "WIN" | "LOSE" | "ONGOING"; reason?: string } => {
-      // 勝利条件、敗北条件をチェックして結果を返す
-      // この結果を main.ts の gameStatus, gameOverReason に反映させる
+      // Check win/loss conditions and return the result
+      // This result will be reflected in main.ts's gameStatus, gameOverReason
       // ...
       return { status: "ONGOING" };
     },
 
     getAvailableActions: (state: YourGameState): YourGameAction[] => {
-      // (オプション) 現在の状態で実行可能な全てのアクションをリストアップする
-      // AI実装やヒント表示に利用できる
+      // (Optional) List all actions currently possible
+      // Can be used for AI implementation or hint display
       // ...
       return [];
     },
   };
   ```
 
-## 4. 描画の実装 (`main.ts`, `view.ts`)
+## 4. Implementing Drawing (`main.ts`, `view.ts`)
 
-### 4.1. ビューコンポーネント (`CardView` など)
+### 4.1. View Components (`CardView`, etc.)
 
-- 特定の要素（カードなど）の描画ロジックをクラスにまとめると再利用性が高まります。
+- Grouping drawing logic for specific elements (like cards) into classes increases reusability.
 
   ```typescript
   // src/utils/view.ts
+  import { vec, Vector, text, rect, line } from "crisp-game-lib"; // Assuming these are available
+
   export class CardView {
     pos: Vector;
-    size = vec(9, 16); // カードサイズ
-    rank: number;
-    suit: "spade" | "heart" | "diamond" | "club";
+    size = vec(9, 16); // Card size
+    rank: number; // Or string, depending on your Rank type
+    suit: "spade" | "heart" | "diamond" | "club"; // Or your Suit type
     isFaceUp: boolean;
-    isHighlighted: boolean; // ハイライト状態
+    isHighlighted: boolean; // Highlight state
+    isVisible: boolean = true; // To control visibility
+    // tailDirection?: "up" | "down" | "left" | "right" | "none"; // For speech bubble like tails
 
-    constructor() {
-      /* ... */
+    constructor(
+      rank: number,
+      suit: "spade" | "heart" | "diamond" | "club",
+      isFaceUp: boolean,
+      pos: Vector
+    ) {
+      this.rank = rank;
+      this.suit = suit;
+      this.isFaceUp = isFaceUp;
+      this.pos = pos;
+      this.isHighlighted = false;
     }
 
     getRankDisplayString(): string {
-      /* A, K, Q, J, f(10) などの変換 */
+      // Convert A, K, Q, J, 10 (e.g., 'f' for 10)
+      if (this.rank === 1) return "A";
+      if (this.rank === 10) return "T"; // Or "f" as in example
+      if (this.rank === 11) return "J";
+      if (this.rank === 12) return "Q";
+      if (this.rank === 13) return "K";
+      return String(this.rank);
     }
 
     draw() {
       if (!this.isVisible) return;
-      // 背景描画 (rect)
-      // テキスト描画 (text)
-      // 尻尾描画 (line) - tailDirection が 'none' でない場合
+      const cardColor =
+        this.suit === "heart" || this.suit === "diamond" ? "red" : "black";
+      const backgroundColor = this.isHighlighted ? "yellow" : "white";
+
+      // Draw background
+      rect(
+        this.pos.x - this.size.x / 2,
+        this.pos.y - this.size.y / 2,
+        this.size.x,
+        this.size.y,
+        { color: backgroundColor }
+      );
+      rect(
+        this.pos.x - this.size.x / 2 + 0.5,
+        this.pos.y - this.size.y / 2 + 0.5,
+        this.size.x - 1,
+        this.size.y - 1,
+        { color: "light_black" }
+      );
+
+      if (this.isFaceUp) {
+        // Draw rank and suit
+        text(
+          this.getRankDisplayString(),
+          this.pos.x - this.size.x / 2 + 1,
+          this.pos.y - this.size.y / 2 + 1,
+          { color: cardColor }
+        );
+        // text(this.suit.charAt(0).toUpperCase(), this.pos.x + this.size.x/2 -1, this.pos.y + this.size.y/2 -1 , {color: cardColor});
+        // Or use a character for suit: char(this.suit === 'spade' ? 'a' : ... , this.pos.x, this.pos.y, {color: cardColor})
+      } else {
+        // Draw card back pattern
+        text("?", this.pos.x, this.pos.y, { color: "blue" });
+      }
+
+      // Draw tail (if it's a speech bubble like card)
+      // if (this.tailDirection && this.tailDirection !== 'none') { /* ... draw line ... */ }
+    }
+
+    contains(point: Vector): boolean {
+      return (
+        point.x >= this.pos.x - this.size.x / 2 &&
+        point.x <= this.pos.x + this.size.x / 2 &&
+        point.y >= this.pos.y - this.size.y / 2 &&
+        point.y <= this.pos.y + this.size.y / 2
+      );
     }
   }
   ```
 
-### 4.2. `update` 関数での描画
+### 4.2. Drawing in the `update` Function
 
-- ゲーム状態 (`gameState`) に基づいて、各要素を描画します。
-- **盤面:** `gameState.grid` をループし、各セルに対して `CardView` インスタンスを作成・設定して `draw()` を呼び出します。
-- **手札:** `gameState.hand` をループし、同様に `CardView` を使って描画します。
-- **情報:** 山札枚数 (`gameState.drawPile.length`)、ランドマーク数 (`gameState.revealedLandmarks`) などを `text()` で描画します。
-  - `text()` の第 4 引数オプションで `{ isSmallText: true, color: "...", backgroundColor: "..." }` などを指定できます。
-- **アイコン:** ゴミ箱など、インタラクティブな要素を `char()` で描画します。クリック可能状態を示すために色を変えるなどの工夫も有効です。
-- **ハイライト:** 選択中の手札や起点カードに対応する `CardView` インスタンスの `isHighlighted` プロパティを `true` に設定してから `draw()` を呼び出します。
-- **ゲーム終了画面:** `gameStatus` が "WIN" または "LOSE" の場合、`text()` で結果を表示します。背景色を指定すると見やすくなります。
-- **チュートリアル吹き出し:** `updateTutorialBubble` によって表示状態 (`isVisible`) が管理されている `tutorialBubble` を `draw()` します。
+- Draw each element based on the game state (`gameState`).
+- **Board:** Loop through `gameState.grid`, create/configure `CardView` instances for each cell, and call `draw()`.
+- **Hand:** Loop through `gameState.hand` and draw using `CardView` similarly.
+- **Information:** Draw draw pile count (`gameState.drawPile.length`), number of revealed landmarks (`gameState.revealedLandmarks`), etc., using `text()`.
+  - The fourth argument options for `text()` can specify `{ isSmallText: true, color: "...", backgroundColor: "..." }`, etc.
+- **Icons:** Draw interactive elements like a trash can using `char()`. Changing color to indicate clickability is also effective.
+- **Highlight:** Set the `isHighlighted` property of `CardView` instances for selected hand cards or source cards to `true` before calling `draw()`.
+- **Game End Screen:** If `gameStatus` is "WIN" or "LOSE", display the result using `text()`. Specifying a background color improves readability.
+- **Tutorial Bubble:** Call `draw()` on the `tutorialBubble` whose display state (`isVisible`) is managed by `updateTutorialBubble`.
 
-## 5. プレイヤー入力処理 (`main.ts`)
+## 5. Player Input Processing (`main.ts`)
 
-- `update` 関数の冒頭 (描画前) で処理するのが一般的です。
-- **ゲーム進行中のみ** 処理 (`if (gameStatus === "ONGOING")`) するようにします。
+- Generally processed at the beginning of the `update` function (before drawing).
+- Process **only when the game is ongoing** (`if (gameStatus === "ONGOING")`).
 
-### 5.1. クリック検出
+### 5.1. Click Detection
 
-- `if (input.isJustPressed)` でクリック（タップ）されたフレームを検出します。
-- `const clickPos = input.pos;` でクリック座標 (Vector) を取得します。
+- Detect clicked (tapped) frames with `if (input.isJustPressed)`.
+- Get click coordinates (Vector) with `const clickPos = input.pos;`.
 
-### 5.2. 要素判定
+### 5.2. Element Identification
 
-- クリック座標 (`clickPos`) が、描画されている各要素 (カード、アイコンなど) の矩形範囲内にあるか `clickPos.isInRect(x, y, width, height)` で判定します。
-  - `isInRect` は要素の**左上座標**と幅・高さを引数に取ります。`CardView` のように中心座標 (`pos`) で管理している場合は、左上座標への変換が必要です。
-  - アイコン (`char`) の場合は、文字の中心座標 (`DISCARD_ICON_X`, `DISCARD_ICON_Y`) と、想定される文字の幅/高さ (`DISCARD_ICON_WIDTH/HEIGHT`) から矩形を計算します。
+- Determine if the click coordinates (`clickPos`) are within the rectangular area of each drawn element (cards, icons, etc.) using `element.contains(clickPos)` (assuming a `contains` method like in the `CardView` example) or `clickPos.isInRect(x, y, width, height)`.
+  - `isInRect` takes the **top-left coordinates** and width/height of the element. If managing by center coordinates (`pos`) like in `CardView`, conversion to top-left coordinates is necessary for `isInRect`.
+  - For icons (`char`), calculate the rectangle from the character's center coordinates (e.g., `DISCARD_ICON_X`, `DISCARD_ICON_Y`) and assumed character width/height (e.g., `DISCARD_ICON_WIDTH/HEIGHT`).
 
-### 5.3. 状態管理と選択ロジック
+### 5.3. State Management and Selection Logic
 
-- **優先順位:** クリック判定は、具体的なアクションにつながる要素（ゴミ箱アイコン、ターゲットカード）から行い、次に選択要素（手札、起点カード）、最後に背景クリックの順で行うと、意図しない動作を防ぎやすくなります。
-- **要素クリックフラグ:** 要素（カード、アイコン）がクリックされたかどうかを示すフラグ (`clickedOnElement`) を用意し、背景クリック処理と区別します。
-- **選択状態変数:** どの要素が選択されているかを保持する変数を用意します (例: `selectedHandIndex: number | null`, `selectedSourceCell: { r: number; c: number } | null`)。
-- **選択/解除:** 要素がクリックされたら、対応する選択状態変数を更新します。
-  - 既に選択されている要素を再度クリックしたら選択解除 (`null` に戻す) するトグル動作にすると便利です。
-  - どの要素もクリックされなかった場合（背景クリック）は、全ての選択状態を解除 (`null` にする) すると誤操作を防げます。
-  - **チュートリアル連携:** カード選択などのタイミングで、`tutorialStep` を更新します。必要に応じて、特定の選択が可能か（例: `canSelectHandForSource()`）をチェックしてチュートリアルの分岐を行うこともあります。
+- **Priority:** Perform click detection for elements leading to specific actions (trash icon, target card) first, then selection elements (hand, source card), and finally background clicks, to prevent unintended behavior.
+- **Element Click Flag:** Use a flag (`clickedOnElement`) to indicate if an element (card, icon) was clicked, distinguishing it from background click processing.
+- **Selection State Variables:** Prepare variables to hold which element is selected (e.g., `selectedHandIndex: number | null`, `selectedSourceCell: { r: number; c: number } | null`).
+- **Select/Deselect:** Update the corresponding selection state variable when an element is clicked.
+  - Implementing a toggle (clicking an already selected element deselects it, returning to `null`) is convenient.
+  - If no element was clicked (background click), deselect all selection states (set to `null`) to prevent misoperations.
+  - **Tutorial Integration:** Update `tutorialStep` at timings like card selection. If necessary, check if a specific selection is possible (e.g., `canSelectHandForSource()`) to branch the tutorial.
 
-### 5.4. アクション実行
+### 5.4. Action Execution
 
-- **優先順位:** ターゲット選択 (カード公開) や手札交換など、最終的なアクション実行の判定を先に行います。
-- **カード公開 (`revealAdjacent`):**
-  - `selectedHandIndex` と `selectedSourceCell` が両方選択されている状態で、
-  - 盤面の裏向きカードがクリックされ、
-  - それが `selectedSourceCell` に隣接しており、
-  - 手札と起点カードの組み合わせがルール上有効 (ランク or スート一致) であれば、
-  - `{ type: "revealAdjacent", payload: { ... } }` アクションを作成し、`applyAction(gameState, action)` を呼び出して `gameState` を更新します。
-  - アクション実行後は選択状態をリセット (`null`) します。
-- **手札交換 (`discardAndDraw`):**
-  - ゴミ箱アイコンなどがクリックされ、
-  - `selectedHandIndex` が選択されており、
-  - 山札 (`gameState.drawPile`) が空でなければ、
-  - `{ type: "discardAndDraw", payload: { handIndex: selectedHandIndex } }` アクションを作成し、`applyAction` を呼び出します。
-  - アクション実行後は選択状態をリセットします。
-- アクションが実行されたかどうかを示すフラグ (`actionTaken`) を管理し、アクションが実行されたフレームでは、後続の選択ロジック (手札/起点カード選択) をスキップするように制御します。
+- **Priority:** Perform determination for final action execution, such as target selection (reveal card) or hand exchange, first.
+- \*\*Card Reveal (`revealAdjacent`):
+  - If `selectedHandIndex` and `selectedSourceCell` are both selected, and
+  - A face-down card on the board is clicked, and
+  - It is adjacent to `selectedSourceCell`, and
+  - The hand and source card combination is valid according to rules (rank or suit match), then
+  - Create a `{ type: "revealAdjacent", payload: { ... } }` action and call `applyAction(gameState, action)` to update `gameState`.
+  - Reset selection state (`null`) after action execution.
+- \*\*Hand Exchange (`discardAndDraw`):
+  - If a trash icon (or similar) is clicked, and
+  - `selectedHandIndex` is selected, and
+  - The draw pile (`gameState.drawPile`) is not empty, then
+  - Create a `{ type: "discardAndDraw", payload: { handIndex: selectedHandIndex } }` action and call `applyAction`.
+  - Reset selection state after action execution.
+- Manage a flag (`actionTaken`) indicating whether an action was executed. If an action was taken in a frame, control subsequent selection logic (hand/source card selection) to skip it.
 
-### 5.5. ゲーム終了チェック
+### 5.5. Game End Check
 
-- アクションが実行された (`actionTaken === true`) 直後に、`CartographersExpedition.checkGameEnd(gameState)` を呼び出します。
-- 結果が "ONGOING" でなければ、`gameStatus` と `gameOverReason` を更新します。
+- Immediately after an action is executed (`actionTaken === true`), call `YourGame.checkGameEnd(gameState)` (using your game definition object).
+- If the result is not "ONGOING", update `gameStatus` and `gameOverReason`.
 
-## 6. チュートリアル実装 (Cartographer's Expedition 例)
+## 6. Tutorial Implementation (Cartographer's Expedition Example)
 
-ゲームの操作方法をプレイヤーに段階的に教えるチュートリアル機能の実装例です。
+An example of implementing a tutorial feature to teach the player game controls step-by-step.
 
-### 6.1. 状態変数
+### 6.1. State Variables
 
-- `tutorialStep`: 現在のチュートリアルの段階を示す変数 (`1 | 2 | ... | "OFF"`)。
-- `previousTutorialStep`: 前フレームの `tutorialStep` を保持し、変更を検知するために使用します。
-- `tutorialBubble`: `SpeechBubbleView` のインスタンスを保持します。
-- `shownTutorialStepsThisSession`: `Set<TutorialStep>` で、現在のゲームセッションで既に表示したステップを記録します。これにより、同じステップのメッセージが何度も表示されるのを防ぎます。
+- `tutorialStep`: Variable indicating the current tutorial stage (`1 | 2 | ... | "OFF"`).
+- `previousTutorialStep`: Holds the `tutorialStep` from the previous frame, used to detect changes.
+- `tutorialBubble`: Holds an instance of `SpeechBubbleView`.
+- `shownTutorialStepsThisSession`: A `Set<TutorialStep>` that records steps already displayed in the current game session. This prevents the same step message from being displayed repeatedly.
 
-### 6.2. チュートリアルビュー (`SpeechBubbleView`)
+### 6.2. Tutorial View (`SpeechBubbleView`)
 
-- 吹き出しの表示を担当するビュークラス (Section 4.1 参照)。
-- テキスト、位置、尻尾の向きなどを設定し、表示/非表示を制御するメソッド (`setText`, `setTail`, `show`, `hide`, `draw`) を持ちます。
-- `setTail` メソッドやコンストラクタオプションで、尻尾の向き (`tailDirection`) に `"none"` を指定することで、尻尾なしの吹き出しを表示することも可能です。
+- A view class responsible for displaying the speech bubble (see Section 4.1).
+- Has methods to set text, position, tail direction, and control display/hiding (`setText`, `setTail`, `show`, `hide`, `draw`).
+- By specifying `"none"` for `tailDirection` in the `setTail` method or constructor options, a speech bubble without a tail can also be displayed.
 
-### 6.3. 更新ロジック (`updateTutorialBubble`)
+### 6.3. Update Logic (`updateTutorialBubble`)
 
-- `tutorialStep` が変更された**ときのみ** `update()` 関数から呼び出される関数。
-- 引数として `currentStep`, `shownSteps`, `bubble` を受け取ります。
-- `currentStep` が `"OFF"` なら `bubble.hide()` して終了します。
-- `shownSteps.has(currentStep)` をチェックします。
-  - **未表示 (`false`) の場合:**
-    - `bubble.setText()` でメッセージを設定します。
-    - `bubble.pos.set()`, `bubble.setTail()` で位置と尻尾を設定します。
-    - `bubble.show()` で表示状態にします。
-    - `shownSteps.add(currentStep)` で表示済みとして記録します。
-  - **表示済み (`true`) の場合:**
-    - `bubble.hide()` を呼び出します。これにより、一度表示したステップに状態が戻ってきた場合に、吹き出しが非表示になり、「二度表示しない」仕様を実現します。
+- A function called from the `update()` function **only when** `tutorialStep` changes.
+- Receives `currentStep`, `shownSteps`, and `bubble` as arguments.
+- If `currentStep` is `"OFF"`, call `bubble.hide()` and exit.
+- Check `shownSteps.has(currentStep)`.
+  - **If not shown (`false`):**
+    - Set the message with `bubble.setText()`.
+    - Set position and tail with `bubble.pos.set()` and `bubble.setTail()`.
+    - Set to display state with `bubble.show()`.
+    - Record as shown with `shownSteps.add(currentStep)`.
+  - **If already shown (`true`):**
+    - Call `bubble.hide()`. This implements the "do not show twice" specification if the state returns to a previously shown step, hiding the bubble.
 
-### 6.4. `update` 関数への統合
+### 6.4. Integration into `update` Function
 
-- **初期化:** ゲーム開始/リトライ時に `tutorialStep = 1`, `previousTutorialStep = null`, `shownTutorialStepsThisSession.clear()` を実行し、`tutorialBubble` を (なければ) new します。
-- **変更検知:** `update()` の入力処理前に `if (tutorialStep !== previousTutorialStep)` をチェックし、変更があれば `updateTutorialBubble()` を呼び出し、`previousTutorialStep = tutorialStep` で状態を更新します。
-- **ステップ更新:** プレイヤーの入力処理 (`input.isJustPressed` ブロック内) で、特定の操作（起点選択、手札選択、アクション実行）に応じて `tutorialStep` を適切な値に更新します。
-  - 必要に応じて、補助関数 (`canSelectHandForSource` など) を使って次のステップを決定します。
-- **描画:** 描画処理の最後の方で `tutorialBubble.draw()` を呼び出します。表示/非表示は `updateTutorialBubble` 内で制御された `isVisible` フラグに依存します。
-- **ステップ遷移:** 特定のステップ（例: アクション完了を示すステップ 5, 6）の後、次の基本ステップ（例: ステップ 1）に戻る場合、`update()` 関数の**最後**で `tutorialStep` を更新します。これにより、そのフレームでは完了メッセージが表示され、次のフレームでステップ 1 の処理（変更検知 → `updateTutorialBubble` → 非表示）が行われます。
-- **ゲーム終了時:** `checkGameEnd` でゲーム終了が検出されたら、`tutorialStep = "OFF"` を設定します。次のフレームの変更検知で吹き出しが `hide()` されます。
+- **Initialization:** On game start/retry, execute `tutorialStep = 1` (or initial step), `previousTutorialStep = null`, `shownTutorialStepsThisSession.clear()`, and `new` the `tutorialBubble` (if it doesn't exist).
+- **Change Detection:** Before input processing in `update()`, check `if (tutorialStep !== previousTutorialStep)`. If changed, call `updateTutorialBubble()` and update the state with `previousTutorialStep = tutorialStep`.
+- **Step Update:** In player input processing (within the `input.isJustPressed` block), update `tutorialStep` to the appropriate value according to specific operations (source selection, hand selection, action execution).
+  - If necessary, use helper functions (e.g., `canSelectHandForSource`) to determine the next step.
+- **Drawing:** Call `tutorialBubble.draw()` towards the end of the drawing process. Display/hiding depends on the `isVisible` flag controlled within `updateTutorialBubble`.
+- **Step Transition:** After certain steps (e.g., steps 5, 6 indicating action completion), if returning to a basic step (e.g., step 1), update `tutorialStep` at the **end** of the `update()` function. This displays the completion message for that frame, and the processing for step 1 (change detection → `updateTutorialBubble` → hide) occurs in the next frame.
+- **Game End:** When game end is detected by `checkGameEnd`, set `tutorialStep = "OFF"`. The bubble will be hidden by change detection in the next frame.
 
-## 7. その他 (旧 Section 6)
+## 7. Miscellaneous (Formerly Section 6)
 
-- **定数:** カードサイズ、グリッド開始位置、情報表示位置などを定数として定義しておくと、レイアウト調整が容易になります。
-- **デバッグ:** `console.log` でクリック座標、選択状態、アクション実行などを出力するとデバッグが捗ります。
-- **ヘルパー関数:** 特定の条件チェック（例: `canSelectHandForSource`）や計算ロジックを `update` 関数外のヘルパー関数として切り出すと、`update` 関数本体が読みやすくなります。
+- **Constants:** Defining card sizes, grid start positions, information display positions, etc., as constants makes layout adjustments easier.
+- **Debugging:** Outputting click coordinates, selection states, action executions, etc., with `console.log` helps with debugging.
+- **Helper Functions:** Extracting specific condition checks (e.g., `canSelectHandForSource`) or calculation logic into helper functions outside the `update` function makes the `update` function itself more readable.
 
-**`crisp-game-lib` ユーティリティ:** ライブラリが提供する以下の様な関数も活用できます。
+**`crisp-game-lib` Utilities:** The library also provides useful functions like:
 
-- `vec(x, y)`: Vector オブジェクトを作成します。
-- `addWithCharCode(char, offset)`: 文字コードを基準にオフセットを加えた文字を取得します (例: `addWithCharCode('a', 1)` は `'b'` を返します)。 スプライトシートのように文字を使う場合に便利です。
-- `clamp(value, min, max)`: 値を指定された範囲内に収めます。
-- `range(count)`: 0 から `count-1` までの数値の配列を生成します。
-- `rnd(minOrMax, max)`: 乱数を生成します。
+- `vec(x, y)`: Creates a Vector object.
+- `addWithCharCode(char, offset)`: Gets a character by adding an offset to a character code (e.g., `addWithCharCode('a', 1)` returns `'b'`). Useful when using characters like a spritesheet.
+- `clamp(value, min, max)`: Clamps a value within a specified range.
+- `range(count)`: Generates an array of numbers from 0 to `count-1`.
+- `rnd(minOrMax, max)`: Generates a random number.
 
-このガイドが、`crisp-game-lib` を用いたカードゲーム開発の一助となれば幸いです。
+Hopefully, this guide will be helpful for developing card games using `crisp-game-lib`.

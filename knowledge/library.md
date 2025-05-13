@@ -1,24 +1,24 @@
-# トランプゲームルール記述ライブラリ 仕様書 (TypeScript 版)
+# Playing Card Game Rule Description Library Specification (TypeScript Version)
 
-## 1. はじめに
+## 1. Introduction
 
-### 1.1. 目的
+### 1.1. Purpose
 
-このライブラリは、主に一人用トランプゲーム（ソリティア等）を中心とした様々なカードゲームのルールを、宣言的かつ厳密に記述するための仕様を提供します。TypeScript の型システムを活用し、ルールの整合性を高めます。LLM（大規模言語モデル）がこの仕様に基づいて新しいゲームの定義を生成し、そのルールがシミュレーションや自動テスト、AI によるプレイが可能な形で実行されることを目指します。
+This library provides a specification for declaratively and rigorously describing the rules of various card games, primarily focusing on single-player card games (solitaire, etc.). It utilizes TypeScript's type system to enhance rule consistency. The goal is for LLMs (Large Language Models) to generate definitions for new games based on this specification, enabling those rules to be executed in a way that allows for simulation, automated testing, and AI play.
 
-### 1.2. 設計思想
+### 1.2. Design Philosophy
 
-- **型安全:** ゲームのルールは、TypeScript を用いたソースコードで記述します。
-- **厳密性:** ルールや状態の定義は曖昧さを排除し、型システムとライブラリによる一意な解釈・実行を可能にします。
-- **UI 分離:** ゲームの純粋なロジックに特化し、UI 関連の情報は含みません。
+- **Type Safety:** Game rules are described in source code using TypeScript.
+- **Rigor:** Definitions of rules and states eliminate ambiguity, allowing for unique interpretation and execution by the type system and library.
+- **UI Separation:** Focuses purely on game logic and does not include UI-related information.
 
-## 2. 基本的な型定義
+## 2. Basic Type Definitions
 
-ゲーム定義の中核となる TypeScript の型を以下に示します。
+The core TypeScript types for game definition are shown below.
 
-### 2.1. カード表現
+### 2.1. Card Representation
 
-標準的なトランプカードを表現します。
+Represents standard playing cards.
 
 ```typescript
 type Suit = "SPADE" | "HEART" | "DIAMOND" | "CLUB";
@@ -40,77 +40,77 @@ type Rank =
 interface Card {
   suit: Suit;
   rank: Rank;
-  id: string; // 各カードインスタンスを区別するための一意なID
+  id: string; // Unique ID to distinguish each card instance
 }
 ```
 
-### 2.2. ゲーム状態 (`GameState`)
+### 2.2. Game State (`GameState`)
 
-ゲームの特定の瞬間における状態を表します。ゲームごとに固有のプロパティを持つことになります。
+Represents the state of the game at a specific moment. Each game will have its own specific properties.
 
 ```typescript
 interface GameState {
-  // 例: シンプルマッチに必要な状態
-  deck: Card[]; // 山札
-  discardPile: Card[]; // 場札（捨て札）の一番上のみが意味を持つ場合が多い
-  hand: Card[]; // 手札
-  // 他のゲームでは、場札が複数列ある、スコアがある、などの状態が追加される
+  // Example: State required for a simple matching game
+  deck: Card[]; // Draw pile
+  discardPile: Card[]; // Often, only the top card of the discard pile is relevant
+  hand: Card[]; // Player's hand
+  // Other games might add states like multiple tableau piles, scores, etc.
 }
 ```
 
-### 2.3. アクション (`Action`)
+### 2.3. Action (`Action`)
 
-プレイヤーが実行可能なアクションを表します。アクションの種類と、それに付随する情報（どのカードを移動するかなど）を含みます。
+Represents an action the player can perform. Includes the type of action and any associated information (e.g., which card to move).
 
 ```typescript
 interface Action {
-  type: string; // アクションの種類を示す識別子 (例: 'DRAW_CARD', 'PLAY_FROM_HAND')
-  payload?: any; // アクションに必要な追加情報 (例: { cardId: '...' })
+  type: string; // Identifier for the action type (e.g., 'DRAW_CARD', 'PLAY_FROM_HAND')
+  payload?: any; // Additional information needed for the action (e.g., { cardId: '...' })
 }
 ```
 
-### 2.4. ゲーム定義 (`GameDefinition`)
+### 2.4. Game Definition (`GameDefinition`)
 
-ゲーム全体のルールとロジックを定義します。
+Defines the overall rules and logic of the game.
 
 ```typescript
 interface GameDefinition<State extends GameState, Act extends Action> {
   /**
-   * ゲームの初期状態を生成します。
-   * @param seed 乱数生成のためのシード（任意）
-   * @returns 初期状態オブジェクト
+   * Generates the initial state of the game.
+   * @param seed Optional seed for random number generation
+   * @returns Initial state object
    */
   setupGame: (seed?: string) => State;
 
   /**
-   * 特定の状態において、プレイヤーが実行可能なすべてのアクションをリストアップします。
-   * @param state 現在のゲーム状態
-   * @returns 実行可能なアクションの配列
+   * Lists all actions the player can perform in a given state.
+   * @param state The current game state
+   * @returns An array of executable actions
    */
   getAvailableActions: (state: State) => Act[];
 
   /**
-   * 特定のアクションを現在の状態に適用し、新しい状態を返します。
-   * ルールの妥当性チェックもここで行います。無効なアクションの場合はエラーをスローするか、
-   * 状態を変更せずに返すことを想定します。
-   * @param state 現在のゲーム状態
-   * @param action 適用するアクション
-   * @returns 新しいゲーム状態
+   * Applies a specific action to the current state and returns the new state.
+   * Rule validation is also performed here. Invalid actions are expected to either
+   * throw an error or return the state unchanged.
+   * @param state The current game state
+   * @param action The action to apply
+   * @returns The new game state
    */
   applyAction: (state: State, action: Act) => State;
 
   /**
-   * ゲームが終了したかどうか、およびその結果（勝利/敗北/進行中）を判定します。
-   * @param state 現在のゲーム状態
-   * @param history 過去のアクション履歴（オプション、ループ検出などに使用可能）
-   * @returns ゲームの終了状態 ('WIN', 'LOSE', 'ONGOING') と、敗北理由 (任意)
+   * Determines if the game has ended and its result (win/lose/ongoing).
+   * @param state The current game state
+   * @param history Optional history of past actions (can be used for loop detection, etc.)
+   * @returns The game's end status ('WIN', 'LOSE', 'ONGOING') and an optional reason for loss.
    */
   checkGameEnd: (
     state: State,
     history?: Act[]
   ) => { status: "WIN" | "LOSE" | "ONGOING"; reason?: string };
 
-  // オプション: ゲーム固有のヘルパー関数や設定など
-  // 例: getCardValue(card: Card): number;
+  // Optional: Game-specific helper functions or settings
+  // Example: getCardValue(card: Card): number;
 }
 ```

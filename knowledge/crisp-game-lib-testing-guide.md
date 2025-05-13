@@ -1,159 +1,159 @@
-# Crisp Game Lib ゲームのテストガイド (Jest と Cartographer's Expedition 実装例より)
+# Crisp Game Lib Game Testing Guide (from Jest and Cartographer's Expedition Implementation Examples)
 
-このドキュメントは、`crisp-game-lib` を使用して開発されたブラウザベースのカードゲーム（または同様のインタラクションを持つゲーム）のテスト戦略と具体的なテストケースの作成方法について解説します。主に「Cartographer's Expedition」のテスト実装 (`test/games/cartographers-expedition/main.test.ts`) で得られた知見に基づいています。
+This document explains test strategies and specific test case creation methods for browser-based card games (or games with similar interactions) developed using `crisp-game-lib`. It is primarily based on insights gained from the test implementation of "Cartographer's Expedition" (`test/games/cartographers-expedition/main.test.ts`).
 
-## 1. はじめに
+## 1. Introduction
 
-### 1.1. テストの重要性
+### 1.1. Importance of Testing
 
-ソフトウェア開発においてテストは不可欠です。特にゲーム開発では、多様なインタラクションや状態遷移が存在するため、手動テストだけでは網羅的な品質保証が困難です。自動テストを導入することで、以下のメリットが得られます。
+Testing is indispensable in software development. Especially in game development, where diverse interactions and state transitions exist, comprehensive quality assurance is difficult with manual testing alone. Introducing automated tests provides the following benefits:
 
-- **バグの早期発見:** コード変更時に既存機能が壊れていないか（リグレッション）を迅速に検出できます。
-- **リファクタリングの安心感:** テストに保護されていれば、コード改善を自信を持って進められます。
-- **仕様の明確化:** テストケース自体が、コンポーネントや関数の期待される動作を記述するドキュメントの役割も果たします。
-- **開発効率の向上:** 手動での繰り返し確認作業を削減できます。
+- **Early Bug Detection:** Quickly detect if existing functionality is broken (regression) when code changes.
+- **Confidence in Refactoring:** Proceed with code improvements confidently if protected by tests.
+- **Specification Clarification:** Test cases themselves also serve as documentation describing the expected behavior of components and functions.
+- **Improved Development Efficiency:** Reduce repetitive manual confirmation work.
 
-### 1.2. Jest と ts-jest の導入
+### 1.2. Introducing Jest and ts-jest
 
-このガイドでは、JavaScript/TypeScript のテスティングフレームワークである [Jest](https://jestjs.io/) を使用します。TypeScript プロジェクトで Jest を利用するためには、`ts-jest` というプリセット（トランスパイラ）が必要です。
+This guide uses [Jest](https://jestjs.io/), a JavaScript/TypeScript testing framework. To use Jest in a TypeScript project, a preset (transpiler) called `ts-jest` is required.
 
-これらのセットアップは、`crisp-game-lib-card-game-guide.md` のプロジェクトセットアップと並行して行うことを想定しています。
+This setup is assumed to be done in parallel with the project setup described in `crisp-game-lib-card-game-guide.md`.
 
-**主なインストールパッケージ:**
+**Main Installation Packages:**
 
 ```bash
 npm install --save-dev jest @types/jest ts-jest jest-environment-jsdom
 ```
 
-- `jest`: Jest 本体。
-- `@types/jest`: Jest の型定義。
-- `ts-jest`: TypeScript を Jest で実行可能にするためのプリセット。
-- `jest-environment-jsdom`: ブラウザ環境 (DOM API など) をシミュレートする Jest 環境。`crisp-game-lib` はブラウザ環境を前提とするため、通常必要です。
+- `jest`: The Jest core.
+- `@types/jest`: Type definitions for Jest.
+- `ts-jest`: A preset to make TypeScript executable with Jest.
+- `jest-environment-jsdom`: A Jest environment that simulates a browser environment (DOM APIs, etc.). This is usually necessary because `crisp-game-lib` assumes a browser environment.
 
-### 1.3. モックの役割
+### 1.3. Role of Mocks
 
-`crisp-game-lib` は、グローバル関数 (`play`, `input`, `text` など) や DOM 操作に依存しています。Jest のテスト環境 (Node.js ベース) でこれらをそのまま実行しようとするとエラーになります。また、テスト対象のユニット（関数やモジュール）を隔離し、外部依存性を排除するためにもモックは重要です。
+`crisp-game-lib` relies on global functions (`play`, `input`, `text`, etc.) and DOM manipulation. Attempting to run these directly in Jest's test environment (Node.js-based) will result in errors. Mocks are also important for isolating the unit under test (function or module) and eliminating external dependencies.
 
-このガイドでは、`crisp-game-lib` 全体をモックする方法を後述します。
+This guide will later describe how to mock `crisp-game-lib` entirely.
 
-## 2. テスト戦略
+## 2. Test Strategy
 
-### 2.1. ユニットテスト vs 統合テスト
+### 2.1. Unit Tests vs. Integration Tests
 
-- **ユニットテスト:** 関数やモジュールなど、コードの最小単位を個別にテストします。外部依存はモックで置き換えます。このガイドでは主にユニットテストに焦点を当てます。
-- **統合テスト:** 複数のユニットを組み合わせて、それらが連携して正しく動作するかをテストします。
-- **E2E (End-to-End) テスト:** 実際のブラウザ環境でユーザー操作をシミュレートし、アプリケーション全体をテストします。
+- **Unit Tests:** Test the smallest units of code, such as functions or modules, individually. External dependencies are replaced with mocks. This guide primarily focuses on unit tests.
+- **Integration Tests:** Combine multiple units and test if they work correctly together.
+- **E2E (End-to-End) Tests:** Simulate user operations in an actual browser environment and test the entire application.
 
-小規模な `crisp-game-lib` ゲームでは、ユニットテストで主要なロジックをカバーすることが費用対効果の高い戦略となることが多いです。
+For small `crisp-game-lib` games, covering the main logic with unit tests is often a cost-effective strategy.
 
-### 2.2. 何をテストすべきか？
+### 2.2. What Should Be Tested?
 
-ゲームの種類や複雑さによりますが、一般的に以下の要素がテスト対象となります。
+This depends on the type and complexity of the game, but generally, the following elements are test targets:
 
-- **ゲームコアロジック (`GameDefinition`):**
-  - `setupGame`: 初期状態が正しく生成されるか。
-  - `applyAction`: 各アクションが状態を正しく更新するか。不変性 (Immutability) が保たれているか。
-  - `checkGameEnd`: 勝利/敗北/継続条件が正しく判定されるか。
-  - `getAvailableActions` (オプション): 特定の状態で可能なアクションがリストアップされるか。
-- **入力処理と状態変更 (`main.ts` のヘルパー関数など):**
-  - プレイヤーのクリック入力（座標）に対して、意図した要素（カード、アイコン）が正しく判定されるか。
-  - 選択状態 (`selectedHandIndex`, `selectedSourceCell` など) が適切に更新されるか。
-  - 入力に応じて適切なアクションがトリガーされるか（`applyAction` が呼ばれるか）。
-  - 無効な入力やエッジケースが適切に処理されるか（エラーサウンド再生、状態不変など）。
-- **チュートリアルロジック:**
-  - 特定のゲーム状態やプレイヤーのアクションに応じて、チュートリアルのステップが正しく遷移するか。
-  - チュートリアルメッセージ (`SpeechBubbleView` の `setText` など) が期待通りに設定されるか。
-  - 表示済みステップの管理 (`shownTutorialStepsThisSession`) が機能しているか。
-- **(オプション) ビューコンポーネントの単体テスト:**
-  - `CardView` や `SpeechBubbleView` などのカスタムビュークラスが、与えられた状態に基づいて正しくプロパティを設定したり、描画メソッド内で期待される `crisp-game-lib` の描画関数 (`text`, `rect`, `char` など) を呼び出したりするか。 (このガイドでは深入りしませんが、複雑なビューでは有効です)
+- **Game Core Logic (`GameDefinition`):**
+  - `setupGame`: Is the initial state generated correctly?
+  - `applyAction`: Does each action update the state correctly? Is immutability maintained?
+  - `checkGameEnd`: Are win/lose/continue conditions judged correctly?
+  - `getAvailableActions` (optional): Are available actions listed for a specific state?
+- **Input Processing and State Changes (helper functions in `main.ts`, etc.):**
+  - Are intended elements (cards, icons) correctly identified for player click input (coordinates)?
+  - Is the selection state (`selectedHandIndex`, `selectedSourceCell`, etc.) updated appropriately?
+  - Are appropriate actions triggered in response to input (`applyAction` called)?
+  - Are invalid inputs and edge cases handled appropriately (error sound playback, state immutability, etc.)?
+- **Tutorial Logic:**
+  - Do tutorial steps transition correctly according to specific game states or player actions?
+  - Are tutorial messages (`setText` of `SpeechBubbleView`, etc.) set as expected?
+  - Does the management of displayed steps (`shownTutorialStepsThisSession`) function correctly?
+- **(Optional) Unit Tests for View Components:**
+  - Do custom view classes like `CardView` and `SpeechBubbleView` correctly set properties based on the given state, or call expected `crisp-game-lib` drawing functions (`text`, `rect`, `char`, etc.) within their drawing methods? (This guide does not delve deeply into this, but it is effective for complex views).
 
-## 3. Jest のセットアップと設定
+## 3. Jest Setup and Configuration
 
 ### 3.1. `jest.config.js`
 
-プロジェクトルートに `jest.config.js` (または `.ts`) を作成し、Jest の設定を行います。
+Create `jest.config.js` (or `.ts`) in the project root and configure Jest.
 
 ```javascript
-// jest.config.js (Cartographer's Expedition で使用している例)
+// jest.config.js (Example used in Cartographer's Expedition)
 export default {
-  preset: "ts-jest/presets/default-esm", // ESM + TypeScript 用のプリセット
-  testEnvironment: "jsdom", // ブラウザ環境をシミュレート
+  preset: "ts-jest/presets/default-esm", // Preset for ESM + TypeScript
+  testEnvironment: "jsdom", // Simulate browser environment
   transform: {
-    "^.+\\.tsx?$": [
-      // .ts または .tsx ファイルをトランスパイル
+    "^.+.tsx?$": [
+      // Transpile .ts or .tsx files
       "ts-jest",
       {
-        useESM: true, // ESM を使用
+        useESM: true, // Use ESM
       },
     ],
   },
   moduleNameMapper: {
-    // `crisp-game-lib` のインポートをスタブファイルに差し替える
+    // Replace `crisp-game-lib` imports with a stub file
     "^crisp-game-lib$": "<rootDir>/test/manual-mocks/crisp-game-lib-stub.ts",
-    // import文で `.js` 拡張子を解決するための設定 (プロジェクトの moduleResolution に依存)
+    // Setting to resolve `.js` extensions in import statements (depends on project's moduleResolution)
     "^(\\.{1,2}/.*)\\.js$": "$1",
   },
-  // Nodeモジュールは基本的にトランスパイル対象外 (必要に応じて調整)
+  // Node modules are basically not targeted for transpilation (adjust as needed)
   transformIgnorePatterns: ["/node_modules/"],
 };
 ```
 
-**重要な設定項目:**
+**Key Configuration Items:**
 
-- `preset`: `ts-jest` のプリセットを指定します。ES Modules を使用している場合は `default-esm` 系を選択します。
-- `testEnvironment`: `jsdom` を指定することで、`window` や `document` などのブラウザ API がテスト内で利用可能になります。
-- `transform`: TypeScript ファイル (`.ts`, `.tsx`) を `ts-jest` でトランスパイルするように設定します。`useESM: true` は `package.json` で `"type": "module"` を指定している場合に重要です。
-- `moduleNameMapper`: 特定のモジュールのインポートパスを別のファイル（通常はモックファイル）にマッピングします。`crisp-game-lib` をモックするために不可欠です。
+- `preset`: Specifies the `ts-jest` preset. If using ES Modules, select an `default-esm` type.
+- `testEnvironment`: Specifying `jsdom` makes browser APIs like `window` and `document` available in tests.
+- `transform`: Configures TypeScript files (`.ts`, `.tsx`) to be transpiled with `ts-jest`. `useESM: true` is important when `"type": "module"` is specified in `package.json`.
+- `moduleNameMapper`: Maps the import path of a specific module to another file (usually a mock file). Essential for mocking `crisp-game-lib`.
 
-### 3.2. `package.json` のテストスクリプト
+### 3.2. Test Script in `package.json`
 
-`package.json` の `scripts` にテスト実行コマンドを定義します。
+Define the test execution command in the `scripts` section of `package.json`.
 
 ```json
 // package.json
 {
-  "type": "module", // ESM を使用する場合
+  "type": "module", // If using ESM
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
-    // 特定のファイルを実行する場合: npm test -- test/path/to/file.test.ts
-    // ウォッチモード: npm test -- --watch
+    // To run a specific file: npm test -- test/path/to/file.test.ts
+    // Watch mode: npm test -- --watch
   }
   // ...
 }
 ```
 
-- `"type": "module"`: プロジェクト全体で ES Modules を使用する場合に指定します。
-- `node --experimental-vm-modules ...`: ESM を Jest で使用する際に必要な Node.js のフラグです。
-- `npm test -- <path_to_file>`: 特定のテストファイルのみを実行する場合のコマンド例です。
+- `"type": "module"`: Specify if using ES Modules throughout the project.
+- `node --experimental-vm-modules ...`: Node.js flag required when using ESM with Jest.
+- `npm test -- <path_to_file>`: Command example for running only a specific test file.
 
-## 4. `crisp-game-lib` のモック (`crisp-game-lib-stub.ts`)
+## 4. Mocking `crisp-game-lib` (`crisp-game-lib-stub.ts`)
 
-前述の通り、`crisp-game-lib` はテスト環境でそのまま動作しないため、その機能を模倣するスタブ（モック）ファイルを作成します。
+As mentioned earlier, `crisp-game-lib` does not work as is in the test environment, so create a stub (mock) file that mimics its functionality.
 
-### 4.1. なぜモックが必要か
+### 4.1. Why Mocks are Necessary
 
-- **環境依存性の排除:** `crisp-game-lib` は内部で `document.createElement("canvas")` などの DOM 操作や、グローバルに `play`, `input` などの関数/オブジェクトを期待します。Node.js 環境にはこれらが存在しません。
-- **テストの分離:** テスト対象のユニットが `crisp-game-lib` の特定の実装に依存せず、インターフェース（呼び出しシグネチャ）にのみ依存するようにします。
-- **検証の容易化:** `crisp-game-lib` の関数が期待通りに呼び出されたか (`toHaveBeenCalledWith`) を Jest のモック機能で簡単に検証できます。
+- **Eliminate Environmental Dependencies:** `crisp-game-lib` internally expects DOM operations like `document.createElement("canvas")` and global functions/objects like `play`, `input`. These do not exist in the Node.js environment.
+- **Isolate Tests:** Ensure that the unit under test depends only on the interface (call signature) of `crisp-game-lib`, not its specific implementation.
+- **Facilitate Verification:** Easily verify if `crisp-game-lib` functions were called as expected (`toHaveBeenCalledWith`) using Jest's mock functionality.
 
-### 4.2. `moduleNameMapper` による差し替え
+### 4.2. Replacement by `moduleNameMapper`
 
-`jest.config.js` の `moduleNameMapper` で、`import "crisp-game-lib";` や `import * as cgl from "crisp-game-lib";` といったインポート文が、代わりに指定したスタブファイル (`<rootDir>/test/manual-mocks/crisp-game-lib-stub.ts` など) を読み込むようにします。
+In `jest.config.js`, use `moduleNameMapper` so that import statements like `import "crisp-game-lib";` or `import * as cgl from "crisp-game-lib";` load the specified stub file (e.g., `<rootDir>/test/manual-mocks/crisp-game-lib-stub.ts`) instead.
 
-### 4.3. スタブファイルの実装例
+### 4.3. Stub File Implementation Example
 
 ```typescript
 // test/manual-mocks/crisp-game-lib-stub.ts
 import { jest } from "@jest/globals";
 
-// 共通の Vector プロパティのモック
+// Mock for common Vector properties
 const commonVecProps = {
   set: jest.fn(),
   isInRect: jest.fn().mockReturnValue(false),
-  // 必要に応じて他のメソッドも追加 (add, sub, mag など)
+  // Add other methods as needed (add, sub, mag, etc.)
 };
 
-// --- 主要な関数/オブジェクトのモック ---
+// --- Mocks for main functions/objects ---
 export const MOCK_PLAY_FN = jest.fn();
 export const MOCK_INPUT_OBJ = {
   isJustPressed: false,
@@ -164,14 +164,14 @@ export const MOCK_VEC_FN = jest.fn((x = 0, y = 0) => ({
   y,
   ...commonVecProps,
 }));
-export const MOCK_COLOR_FN = jest.fn((name) => name); // 色名をそのまま返す実装例
+export const MOCK_COLOR_FN = jest.fn((name) => name); // Example implementation that returns the color name
 export const MOCK_TEXT_FN = jest.fn();
 export const MOCK_TITLE_FN = jest.fn();
 export const MOCK_END_FN = jest.fn();
 export const MOCK_CHAR_FN = jest.fn();
-// ... 他に必要な関数 (rect, line, clamp, rnd, etc.)
+// ... Other necessary functions (rect, line, clamp, rnd, etc.)
 
-// --- ビュークラスのモック ---
+// --- Mocks for view classes ---
 export const MOCK_CARD_VIEW_CLASS = jest.fn().mockImplementation(() => ({
   containsPoint: jest.fn().mockReturnValue(false),
   startFlipAnimation: jest.fn(),
@@ -185,7 +185,7 @@ export const MOCK_CARD_VIEW_CLASS = jest.fn().mockImplementation(() => ({
   isFlipping: false,
   isSelected: false,
   isHighlighted: false,
-  // ... 他のプロパティやメソッド
+  // ... Other properties or methods
 }));
 export const MOCK_SPEECH_BUBBLE_VIEW_CLASS = jest
   .fn()
@@ -200,7 +200,7 @@ export const MOCK_SPEECH_BUBBLE_VIEW_CLASS = jest
     // ...
   }));
 
-// --- グローバルへの割り当て (crisp-game-lib が期待する動作) ---
+// --- Assignment to global (expected behavior by crisp-game-lib) ---
 if (typeof globalThis !== "undefined") {
   (globalThis as any).play = MOCK_PLAY_FN;
   (globalThis as any).input = MOCK_INPUT_OBJ;
@@ -215,7 +215,7 @@ if (typeof globalThis !== "undefined") {
   // ...
 }
 
-// --- テストファイルから import * as cgl from "crisp-game-lib" で使えるようにエクスポート ---
+// --- Export for use in test files with import * as cgl from "crisp-game-lib" ---
 export const play = MOCK_PLAY_FN;
 export const input = MOCK_INPUT_OBJ;
 export const vec = MOCK_VEC_FN;
@@ -228,28 +228,28 @@ export const CardView = MOCK_CARD_VIEW_CLASS;
 export const SpeechBubbleView = MOCK_SPEECH_BUBBLE_VIEW_CLASS;
 // ...
 
-export const __esModule = true; // ESM としてマーク
+export const __esModule = true; // Mark as ESM
 ```
 
-このスタブファイルは、ゲームが使用する `crisp-game-lib` の機能に応じて拡張していく必要があります。
+This stub file needs to be extended according to the `crisp-game-lib` features used by the game.
 
-## 5. テストケースの作成 (`*.test.ts`)
+## 5. Creating Test Cases (`*.test.ts`)
 
-Jest のテストファイルは通常 `*.test.ts` (または `*.spec.ts`) という命名規則に従います。
+Jest test files usually follow the `*.test.ts` (or `*.spec.ts`) naming convention.
 
-### 5.1. Jest の基本 API
+### 5.1. Jest Basic API
 
-- `describe(name, fn)`: 関連するテストをグループ化します。ネストも可能です。
-- `it(name, fn)` または `test(name, fn)`: 個々のテストケースを定義します。
-- `beforeEach(fn)`: 各 `it` ブロックの実行前に毎回実行される処理を定義します (状態のリセットなど)。
-- `afterEach(fn)`: 各 `it` ブロックの実行後に毎回実行される処理を定義します。
-- `beforeAll(fn)`: `describe` ブロック内の全てのテストの前に一度だけ実行されます。
-- `afterAll(fn)`: `describe` ブロック内の全てのテストの後に一度だけ実行されます。
-- `expect(value)`: アサーション（期待値の検証）を開始します。多数のマッチャー (`.toBe()`, `.toEqual()`, `.toHaveBeenCalledWith()`, `.toThrow()` など) が利用可能です。
+- `describe(name, fn)`: Groups related tests. Nesting is also possible.
+- `it(name, fn)` or `test(name, fn)`: Defines individual test cases.
+- `beforeEach(fn)`: Defines processing executed before each `it` block (state reset, etc.).
+- `afterEach(fn)`: Defines processing executed after each `it` block.
+- `beforeAll(fn)`: Executed once before all tests in a `describe` block.
+- `afterAll(fn)`: Executed once after all tests in a `describe` block.
+- `expect(value)`: Starts an assertion (validation of expected value). Many matchers (`.toBe()`, `.toEqual()`, `.toHaveBeenCalledWith()`, `.toThrow()`, etc.) are available.
 
-### 5.2. `main.ts` のテストを例に
+### 5.2. Example: Testing `main.ts`
 
-`Cartographer's Expedition` の `test/games/cartographers-expedition/main.test.ts` を参考に、テスト構造のポイントを解説します。
+Referring to `Cartographer's Expedition`'s `test/games/cartographers-expedition/main.test.ts`, here are key points of the test structure.
 
 #### 5.2.1. `import`
 
@@ -262,138 +262,138 @@ import type {
   ExpeditionAction,
 } from "../../../src/games/cartographers-expedition/definition.js";
 
-// crisp-game-lib はスタブに差し替えられる
-// @ts-expect-error TS7016 (スタブには完全な型定義がない場合がある)
+// crisp-game-lib is replaced by a stub
+// @ts-expect-error TS7016 (stub may not have complete type definitions)
 import * as crispGameLibModule from "crisp-game-lib";
-// GameDefinition の実体もモックする場合がある (後述)
+// The actual GameDefinition may also be mocked (see below)
 import { CartographersExpedition as ActualCartographersExpedition } from "../../../src/games/cartographers-expedition/definition.js";
 
-// テスト対象の関数や、テスト用のセッター/ゲッターをインポート
+// Import functions to be tested, and test setters/getters
 import {
   handleOngoingInput,
-  // ... (テスト用ヘルパー関数: __TEST_ONLY_setGameState, getGameState, etc.)
+  // ... (test helper functions: __TEST_ONLY_setGameState, getGameState, etc.)
   updateTutorialDisplay,
 } from "../../../src/games/cartographers-expedition/main.js";
 ```
 
-#### 5.2.2. `beforeEach` での準備
+#### 5.2.2. Preparation in `beforeEach`
 
-各テストケース (`it`) の実行前に、状態をクリーンにリセットし、必要なモックを設定します。
+Before each test case (`it`) runs, cleanly reset the state and set up necessary mocks.
 
 ```typescript
 describe("Cartographer's Expedition - Main Game Flow", () => {
-  let testGridCardViews: any[][]; // モックされた CardView インスタンスの配列
+  let testGridCardViews: any[][]; // Array of mocked CardView instances
   let testHandCardViews: any[];
-  let testTutorialBubbleInstance: any; // モックされた SpeechBubbleView インスタンス
-  let initialGameState: ExpeditionState; // 各テストで使用する初期ゲーム状態
+  let testTutorialBubbleInstance: any; // Mocked SpeechBubbleView instance
+  let initialGameState: ExpeditionState; // Initial game state used in each test
 
   beforeEach(() => {
-    jest.clearAllMocks(); // 全てのモック関数の呼び出し履歴をクリア
+    jest.clearAllMocks(); // Clear call history of all mock functions
 
-    // crisp-game-lib の入力状態リセット (スタブのプロパティを操作)
+    // Reset crisp-game-lib input state (manipulate stub properties)
     if (crispGameLibModule && crispGameLibModule.input) {
       (crispGameLibModule.input as any).isJustPressed = false;
       (crispGameLibModule.input as any).pos = {
         x: 0,
         y: 0,
-        ...commonVecPropsFromStub,
+        ...commonVecPropsFromStub, // Assuming this is defined in the stub or imported
       };
     }
-    // 特定のモック関数の実装を設定 (例: color が色名を返すように)
+    // Set implementation for specific mock functions (e.g., color returns color name)
     (crispGameLibModule.color as jest.Mock).mockImplementation((name) => name);
 
-    // GameDefinition の関数のモック (applyAction, checkGameEnd など)
-    // これにより、テスト対象の main.ts ロジックが GameDefinition とどう連携するかを
-    // コントロールしやすくなる。
+    // Mock GameDefinition functions (applyAction, checkGameEnd, etc.)
+    // This makes it easier to control how the main.ts logic under test
+    // interacts with GameDefinition.
     (ActualCartographersExpedition.applyAction as jest.Mock).mockClear();
     (ActualCartographersExpedition.checkGameEnd as jest.Mock)
       .mockClear()
-      .mockReturnValue({ status: "ONGOING" }); // デフォルトの戻り値を設定
+      .mockReturnValue({ status: "ONGOING" }); // Set default return value
 
-    // ゲーム状態の初期化 (main.ts 側でテスト用セッターを用意しておくと便利)
+    // Initialize game state (convenient to have test setters in main.ts)
     initialGameState = {
       /* ... */
     };
     __TEST_ONLY_setGameState(initialGameState);
     __TEST_ONLY_setSelectedSourceCell(null);
-    // ... 他の main.ts 内のモジュールスコープ変数のリセット
+    // ... Reset other module-scoped variables in main.ts
 
-    // モックされたビューインスタンスの準備
-    // (CardView や SpeechBubbleView のコンストラクタが jest.fn() でモックされているため、
-    // new するとモックインスタンスが返る)
+    // Prepare mocked view instances
+    // (Since CardView and SpeechBubbleView constructors are mocked with jest.fn(),
+    // `new` returns mock instances)
     testGridCardViews = initialGameState.grid.map((row) =>
       row.map((cell) => (cell ? new crispGameLibModule.CardView() : null))
     );
     testHandCardViews = initialGameState.hand.map((card) =>
       card ? new crispGameLibModule.CardView() : null
     );
-    __TEST_ONLY_setGridCardViews(testGridCardViews); // main.ts のテスト用セッター
+    __TEST_ONLY_setGridCardViews(testGridCardViews); // Test setter in main.ts
     // ...
 
     testTutorialBubbleInstance = new crispGameLibModule.SpeechBubbleView();
     __TEST_ONLY_setTutorialBubble(testTutorialBubbleInstance);
   });
 
-  // ... ここに it ブロックが続く ...
+  // ... `it` blocks follow here ...
 });
 ```
 
-**ポイント:**
+**Points:**
 
-- `__TEST_ONLY_...` プレフィックスの関数は、`main.ts` からテスト目的でのみエクスポートされるセッター/ゲッターです。これにより、テスト対象モジュールの内部状態を制御・観測しやすくなります。
-- `GameDefinition` (`ActualCartographersExpedition`) の各関数 (`applyAction`, `checkGameEnd`) も `jest.fn()` でモック化し、`beforeEach` でクリアします。テストケースごとに `mockReturnValueOnce` や `mockImplementationOnce` を使って特定の振る舞いをさせることができます。
+- Functions prefixed with `__TEST_ONLY_...` are setters/getters exported from `main.ts` only for testing purposes. This makes it easier to control and observe the internal state of the module under test.
+- Each function of `GameDefinition` (`ActualCartographersExpedition`) like `applyAction`, `checkGameEnd` is also mocked with `jest.fn()` and cleared in `beforeEach`. You can use `mockReturnValueOnce` or `mockImplementationOnce` per test case to make them behave specifically.
 
-#### 5.2.3. テストケース (`it` ブロック)
+#### 5.2.3. Test Cases (`it` blocks)
 
-各 `it` ブロックでは、特定のシナリオをテストします。
+Each `it` block tests a specific scenario.
 
-**共通のパターン:**
+**Common Pattern:**
 
-1.  **セットアップ (Arrange):**
+1.  **Arrange:**
 
-    - テストに必要な前提条件を設定します。
+    - Set preconditions necessary for the test.
       - `crispGameLibModule.input.isJustPressed = true;`
       - `crispGameLibModule.input.pos.x = /* ... */;`
-      - 特定のカードビューがクリックされたことにするため、その `containsPoint` モックメソッドが `true` を返すように設定:
+      - To simulate a specific card view being clicked, set its `containsPoint` mock method to return `true`:
         `testGridCardViews[r][c].containsPoint.mockReturnValue(true);`
-      - 必要に応じて、`GameDefinition` のモック関数の戻り値を設定:
+      - If necessary, set the return value of `GameDefinition` mock functions:
         `(ActualCartographersExpedition.applyAction as jest.Mock).mockReturnValueOnce(expectedNextState);`
         `(ActualCartographersExpedition.checkGameEnd as jest.Mock).mockReturnValueOnce({ status: "WIN", ... });`
-      - `main.ts` の内部状態をテスト用セッターで設定:
+      - Set internal state of `main.ts` with test setters:
         `__TEST_ONLY_setSelectedSourceCell({ r: 1, c: 1 });`
         `__TEST_ONLY_setTutorialStep(2);`
 
-2.  **実行 (Act):**
+2.  **Act:**
 
-    - テスト対象の関数を呼び出します。
+    - Call the function under test.
       `handleOngoingInput();`
       `updateTutorialDisplay(...);`
 
-3.  **検証 (Assert):**
-    - `expect` を使って、実行結果が期待通りか検証します。
-      - `crisp-game-lib` のモック関数呼び出し:
+3.  **Assert:**
+    - Use `expect` to verify if the execution result is as expected.
+      - `crisp-game-lib` mock function calls:
         `expect(crispGameLibModule.play).toHaveBeenCalledWith("tap");`
         `expect(testTutorialBubbleInstance.setText).toHaveBeenCalledWith(expect.stringContaining("..."));`
         `expect(crispGameLibModule.title).toHaveBeenCalledWith("YOU WIN!", expect.any(Object));`
-      - `main.ts` の状態ゲッター:
+      - `main.ts` state getters:
         `expect(getSelectedSourceCell()).toEqual({ r: 1, c: 1 });`
         `expect(getTutorialStep()).toBe(2);`
         `expect(getGameState()).toEqual(expectedNextState);`
-      - `GameDefinition` のモック関数呼び出し:
+      - `GameDefinition` mock function calls:
         `expect(ActualCartographersExpedition.applyAction).toHaveBeenCalledWith(currentState, expectedActionPayload);`
         `expect(ActualCartographersExpedition.checkGameEnd).toHaveBeenCalledWith(newState);`
 
 ```typescript
-// 例: STEP 1 - ソースカード選択のテスト
+// Example: STEP 1 - Test source card selection
 it("STEP 1: should select a face-up grid card as source", () => {
   // Arrange
   const sourceCardR = 1,
     sourceCardC = 1;
   const sourceCardView = testGridCardViews[sourceCardR]?.[sourceCardC];
   if (!sourceCardView) throw new Error("Test setup error");
-  sourceCardView.containsPoint.mockReturnValue(true); // このカードがクリックされたことにする
+  sourceCardView.containsPoint.mockReturnValue(true); // Simulate this card being clicked
   (crispGameLibModule.input as any).isJustPressed = true;
-  (crispGameLibModule.input.pos as any).set(10, 20); // クリック座標 (任意)
+  (crispGameLibModule.input.pos as any).set(10, 20); // Click coordinates (arbitrary)
 
   // Act
   handleOngoingInput();
@@ -401,49 +401,49 @@ it("STEP 1: should select a face-up grid card as source", () => {
   // Assert
   expect(crispGameLibModule.play).toHaveBeenCalledWith("tap");
   expect(getSelectedSourceCell()).toEqual({ r: sourceCardR, c: sourceCardC });
-  expect(getTutorialStep()).toBe(2); // チュートリアルが進むはず
-  expect(testTutorialBubbleInstance.setText).toHaveBeenCalled(); // メッセージが設定されるはず
+  expect(getTutorialStep()).toBe(2); // Tutorial should advance
+  expect(testTutorialBubbleInstance.setText).toHaveBeenCalled(); // Message should be set
 });
 ```
 
-## 6. 具体的なテストシナリオの例 (Cartographer's Expedition より)
+## 6. Examples of Specific Test Scenarios (from Cartographer's Expedition)
 
-`main.test.ts` で実装されたテストシナリオは以下の通りです。
+Test scenarios implemented in `main.test.ts` are as follows:
 
-- **主要なゲームフロー:**
-  1.  グリッド上の表向きカードをクリックしてソースとして選択する。
-  2.  ソース選択後、手札のカードをクリックして選択する。
-  3.  ソースと手札選択後、隣接する裏向きカードをクリックして公開する (アクション実行)。
-- **破棄モード:**
-  1.  破棄モードを有効化する (テストでは直接 `__TEST_ONLY_setIsDiscardModeActive(true)` を使用)。
-  2.  手札のカードをクリックして破棄し、山札から新しいカードを引く (アクション実行)。
-  3.  サウンド、状態リセット、チュートリアル更新などを検証。
-- **ゲーム終了条件:**
-  1.  カード公開アクションを実行する。
-  2.  `GameDefinition.applyAction` が新しい状態を返すようにモックする。
-  3.  `GameDefinition.checkGameEnd` が "WIN" (または "LOSE") を返すようにモックする。
-  4.  テスト対象の入力ハンドラ (`handleOngoingInput`) を実行後、`checkGameEnd` が呼び出され、その結果に基づいて `crispGameLibModule.title` (または `end`) が適切な引数で呼び出されることを検証する。
-      (注: `main.ts` の `update` ループ全体をテストするわけではないため、`checkGameEnd` の呼び出しと、その後の `title` 呼び出しをテスト内でシミュレートする必要がありました。)
+- **Main Game Flow:**
+  1. Click a face-up card on the grid to select it as the source.
+  2. After selecting the source, click a card in hand to select it.
+  3. After selecting the source and hand card, click an adjacent face-down card to reveal it (execute action).
+- **Discard Mode:**
+  1. Activate discard mode (in tests, directly use `__TEST_ONLY_setIsDiscardModeActive(true)`).
+  2. Click a card in hand to discard it and draw a new card from the deck (execute action).
+  3. Verify sound, state reset, tutorial update, etc.
+- **Game End Conditions:**
+  1. Execute a card reveal action.
+  2. Mock `GameDefinition.applyAction` to return a new state.
+  3. Mock `GameDefinition.checkGameEnd` to return "WIN" (or "LOSE").
+  4. After executing the input handler under test (`handleOngoingInput`), verify that `checkGameEnd` is called, and based on its result, `crispGameLibModule.title` (or `end`) is called with appropriate arguments.
+     (Note: Since the entire `update` loop of `main.ts` is not tested, the call to `checkGameEnd` and the subsequent `title` call had to be simulated within the test.)
 
-**今後追加が考えられるテストシナリオ:**
+**Test Scenarios That Could Be Added in the Future:**
 
-- 無効なターゲットセルの選択 (隣接していない、既に表向きなど)。
-- 選択されたソースカードの選択解除 (同じカードを再クリック、背景クリック)。
-- チュートリアルステップに応じた入力制限。
-- 山札が空の場合の破棄アクション。
-- 全てのカードが公開された場合のゲーム終了。
-- その他エッジケース。
+- Selection of an invalid target cell (not adjacent, already face-up, etc.).
+- Deselection of a selected source card (re-clicking the same card, clicking the background).
+- Input restrictions according to tutorial steps.
+- Discard action when the deck is empty.
+- Game end when all cards are revealed.
+- Other edge cases.
 
-## 7. デバッグとトラブルシューティング
+## 7. Debugging and Troubleshooting
 
-- **テストの失敗メッセージをよく読む:** Jest の出力は、期待値と実際の値の差分 (`Expected: ... Received: ...`) や、エラーが発生したスタックトレースを詳細に示してくれます。
-- **`console.log` の活用:** テスト対象の関数内やテストケース内で変数の値やモックの呼び出し状況を `console.log` で出力すると、問題の特定に役立ちます。
-- **Jest のオプション:**
-  - `npm test -- --watch`: ファイル変更時に自動で関連テストを再実行します。
-  - `npm test -- --runInBand`: テストをシングルプロセスで順次実行します。並列実行時の奇妙な問題の切り分けに役立つことがあります。
-  - `npm test -- --clearCache`: Jest のキャッシュをクリアします。キャッシュが原因で古い結果が表示される場合に試します。
-  - `.only` と `.skip`: `describe.only(...)` や `it.only(...)` を使うと、そのテストスイートやテストケースのみを実行できます。デバッグ時に便利です。`it.skip(...)` は一時的にテストを無効化します。
-- **ESM との格闘:** `SyntaxError: Cannot use import statement outside a module` や `ReferenceError: exports is not defined` などのエラーは、ESM の設定 (Node.js のフラグ、`package.json` の `type`, `jest.config.js` の `preset` や `transform`, `tsconfig.json` の `module` 設定) が噛み合っていない場合に発生しやすいです。関連する設定を丁寧に見直してください。
-- **モックの確認:** モックが期待通りに機能していない場合 (`TypeError: ... is not a function` など)、スタブファイルで正しくモック関数が定義・エクスポートされ、`moduleNameMapper` で正しくマッピングされているか確認します。また、`jest.clearAllMocks()` が `beforeEach` で呼ばれているかも重要です。
+- **Read Test Failure Messages Carefully:** Jest's output provides detailed information about the difference between expected and actual values (`Expected: ... Received: ...`) and stack traces where errors occurred.
+- **Utilize `console.log`:** Outputting variable values or mock call situations with `console.log` within the function under test or in the test case can help identify problems.
+- **Jest Options:**
+  - `npm test -- --watch`: Automatically re-runs related tests when files change.
+  - `npm test -- --runInBand`: Runs tests sequentially in a single process. Can help isolate strange issues during parallel execution.
+  - `npm test -- --clearCache`: Clears Jest's cache. Try this if old results are displayed due to caching.
+  - `.only` and `.skip`: Using `describe.only(...)` or `it.only(...)` allows you to run only that test suite or test case. Convenient for debugging. `it.skip(...)` temporarily disables a test.
+- **Struggling with ESM:** Errors like `SyntaxError: Cannot use import statement outside a module` or `ReferenceError: exports is not defined` are prone to occur when ESM settings (Node.js flags, `type` in `package.json`, `preset` or `transform` in `jest.config.js`, `module` setting in `tsconfig.json`) are not aligned. Carefully review related settings.
+- **Verify Mocks:** If mocks are not functioning as expected (`TypeError: ... is not a function`, etc.), check that mock functions are correctly defined/exported in the stub file and correctly mapped in `moduleNameMapper`. Also, it's important that `jest.clearAllMocks()` is called in `beforeEach`.
 
-このガイドが、`crisp-game-lib` を用いたゲーム開発におけるテスト実装の一助となれば幸いです。
+Hopefully, this guide will be helpful for implementing tests in game development using `crisp-game-lib`.

@@ -1,117 +1,117 @@
-# プロンプト: 新規一人用トランプゲーム創出プロセス
+# Prompt: New Solitaire Game Creation Process
 
-## フェーズ 1: コンセプト定義
+## Phase 1: Concept Definition
 
-**あなたへの指示:**
-あなたは独創的なゲームデザイナー AI です。これから、標準的なトランプ 52 枚を使った新しい**一人用**カードゲームを設計します。
+**Instructions for you:**
+You are an innovative game designer AI. You will now design a new **single-player** card game using a standard 52-card deck.
 
-1.  まず、このゲームの**中心となるテーマやコンセプト**を簡潔に記述してください。（例: 資源管理と建設、パズル的なカード配置、リスクと報酬の選択、物語の進行など）
-2.  次に、そのコンセプトを実現するための**ユニークなコアメカニクス**（ゲームの中心的な遊び方やルール）のアイデアを**3 つ**提案してください。既存の有名なソリティア（クロンダイク、スパイダー、フリーセルなど）とは異なる、独自のメカニクスを目指してください。
+1.  First, briefly describe the **central theme or concept** of this game. (e.g., resource management and construction, puzzle-like card placement, risk-reward choices, story progression, etc.)
+2.  Next, propose **three unique core mechanics** (the central gameplay and rules) to realize that concept. Aim for original mechanics that differ from famous existing solitaires (Klondike, Spider, Freecell, etc.).
 
-**期待する出力:**
+**Expected Output:**
 
-- ゲームのテーマ/コンセプト (簡潔な説明)
-- コアメカニクスのアイデア 3 案 (簡潔な説明)
-
----
-
-## フェーズ 2: ルール詳細化と GameDefinition 生成
-
-**(フェーズ 1 の出力に基づき、人間がテーマ/コンセプトと最も有望なコアメカニクスを 1 つ選択し、必要であればフィードバックを加えます)**
-
-**あなたへの指示:**
-選択されたテーマ/コンセプト「**[人間が設定したテーマ/コンセプト]**」とコアメカニクス「**[人間が選択したメカニクス]**」に基づいて、ゲームの具体的なルールを詳細化し、`knowledge/library.md`の**「トランプゲームルール記述ライブラリ 仕様書 (TypeScript 版)」**に従った ゲーム定義を生成してください。
-
-ゲーム定義、および後述のシミュレーションに必要なファイルは、`./src/games/[ゲーム名 (英語)(kebab-case)]`ディレクトリに配置してください。自然言語でのゲームルールの説明を`README.md`に記載してください。
-
-**ルール詳細化にあたっての注意点:**
-
-- **シンプルなルール:** **カード以外のリソース管理、トークン、スコアなどは禁止します**。盤面にあるカードのみでゲームの状態が把握できる、シンプルなルールにしてください。
-- **意味のある選択肢:** プレイヤーがゲームの様々な局面で、戦略的に**意味のある複数の選択肢**を持てるように意識してください。常に最善手が自明な状況を避けるように努めてください。
-- **リスクと報酬:** プレイヤーが**興味深いリスクと報酬のトレードオフ**に直面するようなデザインを心がけてください。
-- **悪用可能性の回避:** ルールを組み合わせる際に、**明らかにゲームを壊す単純なループや必勝パターン**（Exploit）が生じないように注意してください。
-- **コアメカニクスの中心性:** 選択された**コアメカニクスが実際のゲームプレイの中心的な役割を果たし**、プレイヤーの意思決定に深く関わるように設計してください。
-- **テーマとの一貫性:** 選択された**テーマやコンセプトが、具体的なアクションや目標に自然に反映される**ようにしてください。
-
-**想定されるプレイヤーの戦略:**
-ゲームプレイにおいて期待される 2〜3 の異なる戦略的アプローチを詳述してください。各戦略について：
-
-- 主な方針と意思決定の優先順位
-- その戦略が効果的になる状況
-- 潜在的なリスクや弱点
-- 他の戦略との比較
-
-**期待する出力:**
-
-- ゲーム定義のソースコード (TypeScript)
-- 自然言語でのゲームルールの説明 (`README.md`)
+- Game theme/concept (brief description)
+- Three core mechanic ideas (brief descriptions)
 
 ---
 
-## フェーズ 2.5: 設計レビュー
+## Phase 2: Rule Detailing and GameDefinition Generation
 
-**(フェーズ 2 で生成されたゲーム定義とルール説明に基づき、人間と AI でレビューを行います)**
+**(Based on the output of Phase 1, a human will select one theme/concept and the most promising core mechanic, and provide feedback if necessary)**
 
-**あなたへの指示:**
-生成されたゲームルールとゲーム定義について、以下の観点から**批判的に**レビューし、議論してください。
+**Instructions for you:**
+Based on the selected theme/concept "**[Human-set theme/concept]**" and core mechanic "**[Human-selected mechanic]**," detail the specific rules of the game and generate a game definition according to the **"Playing Card Game Rule Description Library Specification (TypeScript version)"** in `knowledge/library.md`.
 
-1.  **ルールの一貫性と明確性:** ルールに矛盾や曖昧な点はないか？
-2.  **戦略的な深さ:**
-    - プレイヤーは**意味のある複数の戦略的選択肢**に直面するか？ 最善手が常に自明ではないか？
-    - 意図しない単純な必勝パターン（Exploit）やループが存在しないか？
-3.  **コンセプトとの整合性:** フェーズ 1 で定義されたテーマやコアメカニクスが、実際のルールやプレイヤー体験に反映されているか？
-4.  **面白さの予測:** 現状のルールで、プレイヤーは興味深いリスクと報酬のトレードオフや、達成感のある目標に直面すると期待できるか？
+Place the game definition and files necessary for the simulation described later in the `./src/games/[game-name (English)(kebab-case)]` directory. Describe the game rules in natural language in `README.md`.
 
-**レビューの結果、大きな問題点や改善の必要性が認識された場合は、フェーズ 3 に進まずに、フェーズ 2 に戻ってルールを修正・再定義するか、あるいはフェーズ 4 に移行して具体的な改善案を適用します。**
+**Points to note when detailing rules:**
 
-**期待する出力:**
+- **Simple Rules:** **Prohibit resource management other than cards, tokens, scores, etc.** Keep the rules simple, where the game state can be understood only by the cards on the board.
+- **Meaningful Choices:** Be conscious of giving the player **meaningful multiple choices** strategically at various points in the game. Try to avoid situations where the best move is always obvious.
+- **Risk and Reward:** Aim for a design where the player faces **interesting risk-reward tradeoffs**.
+- **Avoid Exploits:** When combining rules, be careful not to create **obvious simple loops or winning patterns that break the game** (Exploits).
+- **Centrality of Core Mechanics:** Design so that the selected **core mechanic plays a central role in the actual gameplay** and is deeply involved in the player's decision-making.
+- **Consistency with Theme:** Ensure that the selected **theme or concept is naturally reflected in specific actions and goals**.
 
-- レビュー結果の要約（問題点、懸念点など）
-- 次のステップの提案（フェーズ 3 へ進む / フェーズ 2 へ戻る / フェーズ 4 へ移行）
+**Anticipated Player Strategies:**
+Detail 2-3 different strategic approaches expected in gameplay. For each strategy:
 
----
+- Main policy and decision-making priorities
+- Situations where that strategy is effective
+- Potential risks or weaknesses
+- Comparison with other strategies
 
-## フェーズ 3: シミュレーションと評価
+**Expected Output:**
 
-**(フェーズ 2.5 のレビューを経て、ルールに大きな問題がないと判断された場合、またはシミュレーションによる検証が必要と判断された場合に実施します)**
-
-**(生成されたゲーム定義をライブラリに入力し、シミュレーションを実行します。結果データと定性的なプレイ感のフィードバックをまとめます)**
-
-**あなたへの指示:**
-提供されたゲーム定義に基づくシミュレーションを、`knowledge/simulation.md`に従って行うこと。シミュレーション結果 (勝率、平均手数、詰みやすさ、特定ルールの利用頻度など) と定性的なフィードバック (面白さ、課題点、意図通りに機能しているかなど) を提示すること。
-
-これらの情報に基づいて、以下の点を**深く、批判的に**分析し、記述してください。
-
-1.  **特定された主な問題点:**
-    - ゲームバランス、ルール上の欠陥、意図通りに機能していないメカニクスなどを**具体的に**指摘してください。
-    - BasicAI の勝率が極端に高い場合 (例: 90%以上)、それは**ゲームが簡単すぎるか、悪用可能な単純戦略が存在する**強い兆候です。これを主要な問題点として認識し、原因を分析してください。
-    - 単なる勝率だけでなく、AI が**どのような手順・戦略で勝利（または敗北）しているか**を分析し、特に単調な繰り返しや、ゲームの意図を損なうような単純なパターンがないか確認してください。
-    - ルールをプレイヤー視点で**意地悪く（悪用する意図で）解釈・利用した場合**に、意図しない必勝パターンやゲーム性を損なうループ（Exploit）が発生しないか考察してください。
-    - シミュレーション結果や観察された AI の戦略が、**フェーズ 1 で定義されたゲームコンセプトや意図されたプレイヤー体験と整合しているか**を評価してください。（例: リスク管理がテーマなのに、リスクなしで勝てる戦略が存在しないか？）
-2.  **具体的な改善提案:**
-    - 特定された問題点（特に上記の問題点）を解決するためのルール変更案を**複数**提案してください。
-    - 変更は、元のコンセプトを可能な限り維持しつつ、ゲームバランスを改善し、より面白く、意図した通りの体験が得られるようにすることを目指してください。
-
-**期待する出力:**
-
-- 特定された主な問題点 (詳細な分析を含む箇条書き)
-- 具体的な改善提案 (複数案、変更理由と期待される効果の説明)
+- Game definition source code (TypeScript)
+- Description of game rules in natural language (`README.md`)
 
 ---
 
-## フェーズ 4: ルール改善とゲーム定義再生成
+## Phase 2.5: Design Review
 
-**(フェーズ 3 の提案に基づき、人間が適用する改善案を選択します)**
+**(Based on the game definition and rule description generated in Phase 2, humans and AI will conduct a review)**
 
-**あなたへの指示:**
-選択された改善案「**[人間が選択した改善案の詳細]**」を反映するように、**フェーズ 2 で生成したゲーム定義オブジェクトを修正**してください。
+**Instructions for you:**
+**Critically** review and discuss the generated game rules and game definition from the following perspectives:
 
-修正後の完全なゲーム定義出力してください。可能であれば、変更点をコメントなどで簡単に説明してください。
+1.  **Rule Consistency and Clarity:** Are there any contradictions or ambiguities in the rules?
+2.  **Strategic Depth:**
+    - Does the player face **meaningful multiple strategic choices**? Is the best move not always obvious?
+    - Are there no unintentional simple winning patterns (Exploits) or loops?
+3.  **Consistency with Concept:** Are the theme and core mechanics defined in Phase 1 reflected in the actual rules and player experience?
+4.  **Fun Factor Prediction:** With the current rules, can the player be expected to face interesting risk-reward tradeoffs and a sense of accomplishment?
 
-**期待する出力:**
+**If significant problems or the need for improvement are recognized as a result of the review, do not proceed to Phase 3, but return to Phase 2 to revise/redefine the rules, or move to Phase 4 to apply specific improvements.**
 
-- 修正されたゲーム定義のソースコード (TypeScript)
+**Expected Output:**
+
+- Summary of review results (problems, concerns, etc.)
+- Proposal for next steps (Proceed to Phase 3 / Return to Phase 2 / Transition to Phase 4)
 
 ---
 
-**(以降、必要に応じてフェーズ 3 とフェーズ 4 を繰り返す)**
+## Phase 3: Simulation and Evaluation
+
+**(Implemented if, after the review in Phase 2.5, it is judged that there are no major problems with the rules, or if verification by simulation is deemed necessary)**
+
+**(The generated game definition is input into the library, and a simulation is run. The result data and qualitative play-feel feedback are summarized)**
+
+**Instructions for you:**
+Perform a simulation based on the provided game definition according to `knowledge/simulation.md`. Present the simulation results (win rate, average number of moves, susceptibility to getting stuck, frequency of use of specific rules, etc.) and qualitative feedback (fun factor, issues, whether it functions as intended, etc.).
+
+Based on this information, **deeply and critically** analyze and describe the following points:
+
+1.  **Main Identified Problems:**
+    - **Specifically** point out game balance issues, rule flaws, mechanics not functioning as intended, etc.
+    - If BasicAI's win rate is extremely high (e.g., 90% or more), it is a strong indication that **the game is too easy or there is an exploitable simple strategy**. Recognize this as a major problem and analyze the cause.
+    - Analyze not just the win rate, but **what procedures/strategies the AI uses to win (or lose)**, and in particular, check for monotonous repetition or simple patterns that undermine the game's intent.
+    - Consider whether, if the rules are interpreted/used **maliciously (with the intent to exploit) from a player's perspective**, unintentional winning patterns or game-breaking loops (Exploits) occur.
+    - Evaluate whether the simulation results and observed AI strategies are **consistent with the game concept and intended player experience defined in Phase 1**. (e.g., Is risk management the theme, but a risk-free winning strategy exists?)
+2.  **Specific Improvement Proposals:**
+    - Propose **multiple** rule change suggestions to solve the identified problems (especially the problems mentioned above).
+    - Changes should aim to maintain the original concept as much as possible, improve game balance, and make the game more fun and provide the intended experience.
+
+**Expected Output:**
+
+- Main identified problems (bullet points with detailed analysis)
+- Specific improvement proposals (multiple suggestions, explanation of reasons for changes and expected effects)
+
+---
+
+## Phase 4: Rule Improvement and Game Definition Regeneration
+
+**(Based on the proposals in Phase 3, a human selects the improvement plan to apply)**
+
+**Instructions for you:**
+**Modify the game definition object generated in Phase 2** to reflect the selected improvement plan "**[Details of human-selected improvement plan]**".
+
+Output the complete modified game definition. If possible, briefly explain the changes with comments or similar.
+
+**Expected Output:**
+
+- Source code of the modified game definition (TypeScript)
+
+---
+
+**(Hereafter, repeat Phases 3 and 4 as necessary)**
