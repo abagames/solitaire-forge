@@ -110,6 +110,10 @@ export class CardView {
   moveProgress: number; // 0 to 1
   moveSpeed: number; // Progress per frame
 
+  // --- Match animation properties ---
+  isDisappearing: boolean;
+  disappearSpeed: number;
+
   constructor() {
     this.pos = vec();
     this.rank = 1;
@@ -130,6 +134,10 @@ export class CardView {
     this.moveTargetPos = vec(); // Initialize, will be set on animation start
     this.moveProgress = 0;
     this.moveSpeed = 0.07; // Example: ~14 frames for movement
+
+    // --- Match animation initialization ---
+    this.isDisappearing = false;
+    this.disappearSpeed = 0.1; // Speed for disappearing animation
   }
 
   // Rank number を表示用文字列 (A, J, Q, K, T) に変換するヘルパーメソッド
@@ -215,6 +223,17 @@ export class CardView {
         (this.moveTargetPos.y - this.moveStartPos.y) * this.moveProgress;
       this.pos.set(lerpX, lerpY);
     }
+  }
+
+  // --- Add method to start disappearing animation ---
+  startDisappearAnimation() {
+    this.isDisappearing = true;
+    this.moveStartPos = vec(this.pos.x, this.pos.y);
+    // Move to above the screen top edge
+    this.moveTargetPos = vec(this.pos.x, -this.size.y);
+    this.moveProgress = 0;
+    this.moveSpeed = this.disappearSpeed;
+    this.isMoving = true;
   }
 
   // --- Combined update method ---
