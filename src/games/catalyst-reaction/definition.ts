@@ -94,6 +94,8 @@ export type CatalystReactionAction = PlayCatalystAction; // Only PlayCatalyst is
 
 // --- Constants ---
 const MAX_HAND_SIZE = 3;
+const INITIAL_FIELD_SIZE = 8;
+const MAX_FIELD_SIZE = 12; // フィールドの最大枚数を12枚に設定
 
 // --- Helper Function for Automatic Reactions ---
 
@@ -185,7 +187,7 @@ export const catalystReactionGameDefinition: GameDefinition<
     }
     const shuffledDeck = shuffle(fullDeck, seed);
 
-    const fieldSize = 8; // Changed back to 8
+    const fieldSize = INITIAL_FIELD_SIZE; // 初期枚数を定数で指定
     let initialFieldDeal = shuffledDeck.slice(0, fieldSize);
     let currentDeck = shuffledDeck.slice(fieldSize);
 
@@ -291,13 +293,41 @@ export const catalystReactionGameDefinition: GameDefinition<
     const actions: CatalystReactionAction[] = [];
     // Player only needs cards in hand. Placement is always possible.
     if (state.hand.length > 0) {
-      for (const handCard of state.hand) {
-        // Generate positions from 0 (left end) to field.length (right end)
-        for (let i = 0; i <= state.field.length; i++) {
-          actions.push({
-            type: PLAY_CATALYST,
-            payload: { catalystCardId: handCard.id, position: i },
-          });
+      // フィールドが最大枚数に達している場合は特別処理
+      if (state.field.length >= MAX_FIELD_SIZE) {
+        // 手札の各カードについて、反応が起きる位置のみをアクションに追加
+        for (const handCard of state.hand) {
+          for (let pos = 1; pos < state.field.length; pos++) {
+            const leftCard = state.field[pos - 1];
+            const rightCard = state.field[pos];
+
+            // 3枚すべてが同じランクまたは同じスート
+            const sameRank =
+              leftCard.rank === handCard.rank &&
+              handCard.rank === rightCard.rank;
+
+            const sameSuit =
+              leftCard.suit === handCard.suit &&
+              handCard.suit === rightCard.suit;
+
+            if (sameRank || sameSuit) {
+              actions.push({
+                type: PLAY_CATALYST,
+                payload: { catalystCardId: handCard.id, position: pos },
+              });
+            }
+          }
+        }
+      } else {
+        // 通常の処理: すべての位置を許可
+        for (const handCard of state.hand) {
+          // Generate positions from 0 (left end) to field.length (right end)
+          for (let i = 0; i <= state.field.length; i++) {
+            actions.push({
+              type: PLAY_CATALYST,
+              payload: { catalystCardId: handCard.id, position: i },
+            });
+          }
         }
       }
     }
@@ -338,16 +368,21 @@ export const catalystReactionGameDefinition: GameDefinition<
         const rightCard = newState.field[rightCardIndex]; // Card at the insertion point index
 
         // Check PLAYER reaction condition
-        const matchLeft =
+        // 3枚すべて同じランクの場合
+        const sameRank =
           leftCard &&
-          (leftCard.rank === catalystCard.rank ||
-            leftCard.suit === catalystCard.suit);
-        const matchRight =
           rightCard &&
-          (rightCard.rank === catalystCard.rank ||
-            rightCard.suit === catalystCard.suit);
+          leftCard.rank === catalystCard.rank &&
+          catalystCard.rank === rightCard.rank;
 
-        playerReactionOccurred = matchLeft && matchRight;
+        // 3枚すべて同じスートの場合
+        const sameSuit =
+          leftCard &&
+          rightCard &&
+          leftCard.suit === catalystCard.suit &&
+          catalystCard.suit === rightCard.suit;
+
+        playerReactionOccurred = sameRank || sameSuit;
 
         if (playerReactionOccurred) {
           console.log(
@@ -418,6 +453,42 @@ export const catalystReactionGameDefinition: GameDefinition<
         status: "LOSE",
         reason: "Deck and hand are empty, cannot make further moves.",
       };
+    }
+
+    // 新しい敗北条件: 場札が最大枚数に達していて、手札のどのカードも反応が起きない場合
+    if (state.field.length >= MAX_FIELD_SIZE) {
+      // 手札の各カードについて、反応が起きる位置があるかチェック
+      let canCauseReaction = false;
+
+      // 手札の各カードをチェック
+      for (const handCard of state.hand) {
+        // 各位置についてチェック (フィールドの中間位置のみ)
+        for (let pos = 1; pos < state.field.length; pos++) {
+          const leftCard = state.field[pos - 1];
+          const rightCard = state.field[pos];
+
+          // 3枚すべてが同じランクまたは同じスートかチェック
+          const sameRank =
+            leftCard.rank === handCard.rank && handCard.rank === rightCard.rank;
+
+          const sameSuit =
+            leftCard.suit === handCard.suit && handCard.suit === rightCard.suit;
+
+          if (sameRank || sameSuit) {
+            canCauseReaction = true;
+            break; // 一つでも反応の可能性があれば十分
+          }
+        }
+        if (canCauseReaction) break;
+      }
+
+      // どのカードも反応を起こせない場合は敗北
+      if (!canCauseReaction) {
+        return {
+          status: "LOSE",
+          reason: "Field is full and no reactions are possible.",
+        };
+      }
     }
 
     return { status: "ONGOING" };
