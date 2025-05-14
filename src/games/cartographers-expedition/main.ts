@@ -333,7 +333,7 @@ export function updateTutorialDisplay(
   }
 }
 
-// --- 追加: 手札のカード位置を計算するヘルパー関数 ---
+// --- ADDED: Helper function to calculate hand card positions ---
 function calculateHandPos(index: number): Vector {
   const posX =
     HAND_CARD_START_X + index * CARD_DISPLAY_WIDTH + CARD_DISPLAY_WIDTH / 2;
@@ -341,9 +341,9 @@ function calculateHandPos(index: number): Vector {
   return vec(posX, posY);
 }
 
-// --- 追加: カードビューを初期化/更新する関数 ---
+// --- ADDED: Function to initialize/update card views ---
 function initializeCardViews(state: ExpeditionState) {
-  // グリッドビュー初期化
+  // Initialize grid views
   gridCardViews = [];
   for (let r = 0; r < state.grid.length; r++) {
     gridCardViews[r] = [];
@@ -439,7 +439,7 @@ export function handleOngoingInput(): boolean {
   let actionTaken = false;
   let invalidActionSoundPlayed = false; // Track if buzz sound was played this frame
 
-  // --- 1. ゴミ箱アイコンクリック ---
+  // --- 1. Trash icon click ---
   const iconRect = {
     x: DISCARD_ICON_X - DISCARD_ICON_WIDTH / 2,
     y: DISCARD_ICON_Y - DISCARD_ICON_HEIGHT / 2,
@@ -464,7 +464,7 @@ export function handleOngoingInput(): boolean {
     });
   }
 
-  // --- 2. 盤面クリック処理 (revealAdjacent / source selection) ---
+  // --- 2. Grid click processing (revealAdjacent / source selection) ---
   if (!actionTaken && !clickedOnElement) {
     for (let r = 0; r < 5 && !clickedOnElement && !actionTaken; r++) {
       for (let c = 0; c < 5 && !clickedOnElement && !actionTaken; c++) {
@@ -491,7 +491,7 @@ export function handleOngoingInput(): boolean {
             break; // inner loop break
           }
 
-          // --- ターゲット選択フェーズ (Source & Hand already selected) ---
+          // --- Target selection phase (Source & Hand already selected) ---
           if (
             cell &&
             selectedHandIndex !== null &&
@@ -686,7 +686,7 @@ export function handleOngoingInput(): boolean {
               }
             }
           } else if (cell && cell.faceUp) {
-            // --- 起点選択フェーズ (Source selection / deselection) ---
+            // --- Source selection phase (Source selection / deselection) ---
             play("tap");
             const alreadySelected =
               selectedSourceCell?.r === r && selectedSourceCell?.c === c;
@@ -706,7 +706,7 @@ export function handleOngoingInput(): boolean {
               }
             );
           } else if (cell && !cell.faceUp) {
-            // 裏向きカードクリック (アクション不可時)
+            // Clicked face-down card (when action is not possible)
             play("buzz");
             invalidActionSoundPlayed = true;
           }
@@ -716,10 +716,10 @@ export function handleOngoingInput(): boolean {
     } // outer for (r)
   } // End Grid Click Check
 
-  // --- 3. 手札クリック処理 (discardAndDraw / hand selection) ---
+  // --- 3. Hand click processing (discardAndDraw / hand selection) ---
   if (!actionTaken && !clickedOnElement) {
     if (isDiscardModeActive) {
-      // --- 捨てモード ---
+      // --- Discard mode ---
       for (let index = 0; index < handCardViews.length; index++) {
         const cardView = handCardViews[index];
         if (
@@ -787,7 +787,7 @@ export function handleOngoingInput(): boolean {
         }
       }
     } else {
-      // --- 通常モード (Hand selection / deselection) ---
+      // --- Normal mode (Hand selection / deselection) ---
       for (let index = 0; index < handCardViews.length; index++) {
         const cardView = handCardViews[index];
         if (
@@ -846,7 +846,7 @@ export function handleOngoingInput(): boolean {
     }
   } // End Hand Click Check
 
-  // --- 4. 背景クリック処理 ---
+  // --- 4. Background click processing ---
   if (!actionTaken && !clickedOnElement) {
     const wasDiscardModeActive = isDiscardModeActive; // Store state before change
     if (isDiscardModeActive) {
@@ -901,18 +901,18 @@ function drawOngoingGame() {
     const allowHighlighting = revealedGridCardsCount < 3;
     // --- END ADDITION ---
 
-    // 盤面を描画 (CardView を使用)
+    // Draw grid (using CardView)
     for (let r = 0; r < gridCardViews.length; r++) {
       for (let c = 0; c < gridCardViews[r].length; c++) {
         const cardView = gridCardViews[r]?.[c];
         if (cardView) {
-          // isSelected 状態を毎フレーム更新
+          // Update isSelected state every frame
           cardView.isSelected =
             selectedSourceCell !== null &&
             selectedSourceCell.r === r &&
             selectedSourceCell.c === c;
 
-          // isHighlighted 状態をリセットし、再評価
+          // isHighlighted state to reset and re-evaluate
           cardView.isHighlighted = false;
           const cell = gameState.grid[r]?.[c];
 
@@ -1003,7 +1003,7 @@ function drawOngoingGame() {
       }
     }
 
-    // 情報表示 (Draw)
+    // Information display (Draw)
     color("black");
     text(`Draw: ${gameState.drawPile.length}`, DRAW_TEXT_X, DRAW_TEXT_Y, {
       isSmallText: true,
@@ -1066,7 +1066,7 @@ function drawOngoingGame() {
       }
     });
 
-    // ゴミ箱アイコン描画
+    // Draw trash icon
     color(isDiscardModeActive ? "cyan" : "black");
     char("g", DISCARD_ICON_X, DISCARD_ICON_Y);
 
