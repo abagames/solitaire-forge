@@ -1,5 +1,7 @@
 # Solitaire Forge
 
+English | [日本語](./README_ja.md)
+
 Framework for designing, implementing, and evaluating new single-player card games (solitaire) using a standard 52-card deck.
 
 ## Overview
