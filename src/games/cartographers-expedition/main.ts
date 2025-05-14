@@ -381,7 +381,6 @@ function initializeCardViews(state: ExpeditionState) {
 
 // --- NEW: Function for session initialization ---
 function initializeSession() {
-  console.log("DEBUG: Initializing session...");
   playBgm();
   if (!tutorialBubble) {
     tutorialBubble = new SpeechBubbleView(0, 0, 60, 20, "", {
@@ -393,15 +392,12 @@ function initializeSession() {
   // previousTutorialStep = null;
   // shownTutorialStepsThisSession.clear();
   // tutorialStep = 1;
-  console.log("DEBUG: Session initialization complete.");
 }
 
 // --- NEW: Function to start a new game ---
 // (Returns true on success, false on failure. Sets gameState)
 function startNewGame(): boolean {
   // <-- Return type boolean
-  console.log("DEBUG: Starting new game...");
-
   // Setup new game state using the definition
   gameState = CartographersExpedition.setupGame();
 
@@ -423,7 +419,6 @@ function startNewGame(): boolean {
     );
     return false; // Indicate failure
   }
-  console.log("DEBUG: New game start complete.");
   // --- Update tutorial display immediately after new game start ---
   // (Moved tutorial update call to main update loop after successful init)
   return true; // Indicate success
@@ -504,9 +499,6 @@ export function handleOngoingInput(): boolean {
               play("tap");
               if (isSameSource) {
                 // Clicked the ALREADY selected source card: Deselect ONLY the source
-                console.log(
-                  "Clicked selected source again -> Deselecting source ONLY."
-                );
                 selectedSourceCell = null; // Deselect source only
                 // Tutorial Step Update: Hand still selected, source deselected -> back to step 1
                 tutorialStep = handleTutorialInputLogic(
@@ -522,9 +514,6 @@ export function handleOngoingInput(): boolean {
                 );
               } else {
                 // Clicked a DIFFERENT face-up card: Treat as new source selection
-                console.log(
-                  "Clicked different face-up card -> New source selection."
-                );
                 selectedSourceCell = { r, c }; // Keep hand selected, change source
                 // Tutorial Step Update: Based on new source and existing hand selection
                 const newCanSelectHand =
@@ -1193,7 +1182,6 @@ function update() {
   } else if (gameLifeCycle === "GameOver") {
     // --- Input Handling for Game Over (Retry) ---
     if (input.isJustPressed) {
-      console.log("Retry triggered! Setting lifecycle to NeedsInit.");
       gameLifeCycle = "NeedsInit"; // Set to NeedsInit to trigger re-initialization
     }
     // --- End Input Handling for Game Over ---

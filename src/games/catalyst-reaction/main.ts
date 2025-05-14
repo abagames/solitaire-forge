@@ -373,10 +373,6 @@ export function __TEST_ONLY_handleInputAndGameLogic(
         selectedPlacementPosition = null;
         updateCardViews();
       } else {
-        console.error(
-          "Logic error: selectedHandCardId did not match any card in gameState.hand",
-          selectedHandCardId
-        );
         selectedHandCardId = null;
       }
     }
@@ -437,7 +433,6 @@ function update() {
     disappearingCardViews = []; // Clear animations from previous game
 
     updateCardViews();
-    console.log("Game Initialized", gameState);
     return; // Initial call to update should just init
   }
 
