@@ -22,7 +22,7 @@ You are an innovative game designer AI. You will now design a new **single-playe
 **Instructions for you:**
 Based on the selected theme/concept "**[Human-set theme/concept]**" and core mechanic "**[Human-selected mechanic]**," detail the specific rules of the game and generate a game definition according to the **"Playing Card Game Rule Description Library Specification (TypeScript version)"** in `knowledge/library.md`.
 
-Place the game definition and files necessary for the simulation described later in the `./src/games/[game-name (English)(kebab-case)]` directory. Describe the game rules in natural language in `README.md`.
+Place the game definition and files necessary for the simulation described later in the `./src/games/[game-name (kebab-case, e.g., my-new-game)]` directory. Describe the game rules in natural language in `README.md`.
 
 **Points to note when detailing rules:**
 

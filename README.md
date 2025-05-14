@@ -4,7 +4,7 @@ Framework for designing, implementing, and evaluating new single-player card gam
 
 ## Overview
 
-The core goal of this project is to facilitate the creation of novel solitaire experiences. It defines a structured game design process (see [`knowledge/prompt.md`](./knowledge/prompt.md)) that guides developers through:
+The core goal of this project is to facilitate the creation of novel solitaire experiences. It defines a structured game design process (see [`knowledge/new-solitaire-creation-steps.md`](./knowledge/new-solitaire-creation-steps.md)) that guides developers through:
 
 1.  **Concept Definition:** Establishing the theme and core mechanics.
 2.  **Rule Definition:** Detailing game rules and generating a TypeScript game definition based on [`knowledge/library.md`](./knowledge/library.md) specifications.
@@ -12,12 +12,10 @@ The core goal of this project is to facilitate the creation of novel solitaire e
 4.  **Simulation & Evaluation:** Running simulations (based on [`knowledge/simulation.md`](./knowledge/simulation.md)) to analyze game balance, difficulty, and identify potential issues.
 5.  **Refinement:** Iteratively improving the rules and game definition based on review and simulation feedback.
 
-## Features
+The process also includes dedicated guides for implementation and testing:
 
-- **Structured Design Process:** A defined methodology for creating new solitaire games.
-- **TypeScript Game Definition Library:** A specification ([`knowledge/library.md`](./knowledge/library.md)) for defining game logic in a reusable format.
-- **Simulation Framework:** Tools and guidelines ([`knowledge/simulation.md`](./knowledge/simulation.md)) for automated game testing and analysis.
-- **Example Game:** Includes "Cartographers Expedition" ([`src/games/cartographers-expedition`](./src/games/cartographers-expedition)) as a concrete implementation example built using this framework.
+1.  **Rule Implementation:** Implementing the game logic using the guidance provided in [`knowledge/crisp-game-lib-card-game-guide.md`](./knowledge/crisp-game-lib-card-game-guide.md).
+2.  **Testing:** Thoroughly testing the game implementation as outlined in [`knowledge/crisp-game-lib-testing-guide.md`](./knowledge/crisp-game-lib-testing-guide.md).
 
 ## Included Games
 
