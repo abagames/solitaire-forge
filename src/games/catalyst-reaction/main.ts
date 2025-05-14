@@ -666,7 +666,7 @@ export const __TEST_ONLY_getPreviousTutorialStep = () => previousTutorialStep;
 
 // Also exporting updateCardViews, updateSelectionVisuals, rankToNumber for direct test use if needed.
 
-const imageFiles = ["./media/background.png"];
+const imageFiles = ["background.png"];
 
 init({
   update,
@@ -700,10 +700,9 @@ init({
     audioTempo: 120,
   },
   audioFiles: {
-    bgm: "./media/bgm.mp3",
-    tap: "./media/tap.mp3",
-    flip: "./media/flip.mp3",
-    coin: "./media/coin.mp3",
-    // buzz: "./media/buzz.mp3", // Uncomment if you add buzz sound later
+    bgm: "bgm.mp3",
+    tap: "tap.mp3",
+    flip: "flip.mp3",
+    coin: "coin.mp3",
   },
 });
