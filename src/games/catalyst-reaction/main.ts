@@ -667,11 +667,9 @@ init({
   update,
   characters: characters.concat(imageFiles),
   options: {
-    viewSize: { x: 160, y: 60 }, // 横幅を150から160に変更
+    viewSize: { x: 160, y: 60 },
     isShowingScore: false,
     isSoundEnabled: false,
-    // theme: "pixel", // Optional: explore themes later
-    // isUsingSmallText: true, // Optional: if text needs to be smaller globally
     colorPalette: [
       [45, 27, 22],
       [34, 26, 24],

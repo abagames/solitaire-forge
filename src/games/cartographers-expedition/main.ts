@@ -1230,7 +1230,7 @@ init({
   options: {
     isSoundEnabled: false,
     isShowingScore: false,
-    viewSize: VIEW_SIZE, // Use the constant here
+    viewSize: VIEW_SIZE,
     colorPalette: [
       [200, 172, 136],
       [231, 208, 172],
