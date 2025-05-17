@@ -21,12 +21,16 @@
 
 ## 収録ゲーム (Included Games)
 
-### 触媒反応 (Catalyst Reaction)
+### 触媒反応 (Catalyst Reaction) ([Play](https://abagames.github.io/solitaire-forge/catalyst-reaction/))
 
 - **説明:** 錬金術をテーマにしたソリティアゲームで、目標は場からすべてのカードを取り除くことです。プレイヤーは手札から場にカードを出します。出されたカードが、新たに隣接するカードと 3 枚組（同じランクまたは同じスート）を形成する場合、それら 3 枚のカードは取り除かれます。その後、場にある隣接する 3 枚のカードがセットを形成する場合にも、自動的な連鎖反応が発生する可能性があります。
 - **ルール:** [./src/games/catalyst-reaction/README.md](./src/games/catalyst-reaction/README.md)
 
-### 地図製作者の探検 (Cartographer's Expedition)
+https://github.com/user-attachments/assets/5ff430d3-8e96-4997-8501-dd4f39cc4998
+
+### 地図製作者の探検 (Cartographer's Expedition) ([Play](https://abagames.github.io/solitaire-forge/cartographers-expedition/))
 
 - **説明:** 「Cartographer's Expedition（地図製作者の探検）」は、未知の土地を探索し、隠された重要なランドマークを発見することを目指す一人用トランプゲームです。プレイヤーは手札のカードと場の表向きカードを戦略的に組み合わせ、隣接する裏向きカードを公開していき、4 つの隠されたランドマーク（エース）をすべて見つけることが目標です。
 - **ルール:** [./src/games/cartographers-expedition/README.md](./src/games/cartographers-expedition/README.md)
+
+https://github.com/user-attachments/assets/1979a037-8aca-46ff-963c-6b651d8b2c2f
